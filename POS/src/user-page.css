@@ -1,0 +1,67 @@
+.user-page {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0px;
+}
+
+.top-user-nav {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+    height: 70px;
+    color: var(--secondary-color);
+  }
+
+.period-selector {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.period-selector button {
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.period-selector button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.chart-container {
+    height: 400px;
+    margin-bottom: 30px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.report-table th, .report-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.report-table th {
+    background-color: #f2f2f2;
+}
+
+.error {
+    color: #dc3545;
+    margin: 20px 0;
+}
+
+.signout-button {
+    background-color: #007bff;
+    margin-top: 10px;
+    margin-bottom: 40px;
+    padding: 10px;
+    color: white;
+
+}
