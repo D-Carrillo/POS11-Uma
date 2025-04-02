@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -5,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const itemsRoutes = require('./routes/itemsRoutes');
 require('./config/db'); // Initialize DB connection
 
 const app = express();
@@ -18,6 +20,7 @@ app.use('/auth', authRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', supplierRoutes);
 app.use('/api', reportRoutes);
+app.use('/api/items', itemsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

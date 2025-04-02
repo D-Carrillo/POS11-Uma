@@ -71,13 +71,15 @@ const UserPage = () => {
                 RetailPro
                 </div>
                 <div className="user-controls">
-                <Link to="/shopping-cart">
+                {/* <Link to="/shopping-cart">
                     <button className="cart-button" title="View Shopping Cart">
                     <FontAwesomeIcon icon={faShoppingCart} />
                     </button>
-                </Link>
+                </Link> */}
                 <div className="user-info">
-                    <button className = "user-button">{user.first_name}</button>
+                    <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
+                        <button className="user-button">{user.first_name}</button>
+                    </Link>
                 </div>
                 </div>
             </div>
