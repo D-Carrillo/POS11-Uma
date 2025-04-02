@@ -1,18 +1,14 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate , Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import './checkout.css';
 
 const Checkout = () => {
-  // State for cart summary and form fields
-  const [cartSummary] = useState({
-    items: [
-      { name: 'Wireless Headphones', quantity: 1, price: 129.99 },
-      { name: 'Smart Watch', quantity: 1, price: 199.99 },
-      { name: 'Smartphone Case', quantity: 2, price: 24.99 },
-      { name: 'Wireless Mouse', quantity: 1, price: 34.99 }
-    ]
-  });
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user'));
+  const [product, setProduct] = useState(null);
 
   const [totals, setTotals] = useState({
     subtotal: 0,
@@ -29,19 +25,23 @@ const Checkout = () => {
 
   // Calculate totals on component mount
   useEffect(() => {
-    let subtotal = 0;
-    cartSummary.items.forEach(item => {
-      subtotal += item.price * item.quantity;
-    });
+    const selectedProduct = JSON.parse(localStorage.getItem('selectedProduct'));
+    if(!selectedProduct) {
+      navigate('/');
+      return;
+    }
+    setProduct(selectedProduct);
+
+    const subtotal = selectedProduct.price;
     const tax = subtotal * 0.08;
     const total = subtotal + tax;
 
     setTotals({
-      subtotal: subtotal.toFixed(2),
+      subtotal: parseFloat(subtotal).toFixed(2),
       tax: tax.toFixed(2),
-      total: total.toFixed(2)
+      total: parseFloat(total).toFixed(2)
     });
-  }, [cartSummary.items]);
+}, [navigate]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -107,24 +107,40 @@ const Checkout = () => {
     
     // Simulate successful payment processing
     alert('Payment successful! Your order has been placed.');
-    
-    // In a production system, you would send the payment details to your server here
-    // and also clear the shopping cart as needed.
+    localStorage.removeItem('selectedProduct');
+    navigate('/');
   };
 
+  if(!product) return <div>Loading...</div>
   return (
     <div className='bodies'>
+          <div className='top-user-nav'>
+            <div className="logo">
+              <FontAwesomeIcon icon={faShoppingCart} />
+              RetailPro
+            </div>
+            <div className="user-controls">             
+                 {/* <Link to="/shopping-cart">
+                  <button className="cart-button" title="View Shopping Cart">
+                  <FontAwesomeIcon icon={faShoppingCart} />
+                  </button>
+              </Link> */}
+              <div className="user-info">
+                <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
+                  <button className="user-button">{user.first_name}</button>
+                </Link>
+              </div>
+            </div>
+          </div>      
         <div className="checkout-container">
         {/* Order Summary Section */}
         <div className="order-summary">
             <h2>Order Summary</h2>
             <div id="summary-items">
-            {cartSummary.items.map((item, index) => (
-                <div className="summary-item" key={index}>
-                <span>{item.name} x {item.quantity}</span>
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-            ))}
+            <div className="summary-item">
+              <span>{product.Name} x 1</span>
+              <span>${parseFloat(product.price).toFixed(2)}</span>
+            </div>
             </div>
             <div className="summary-row">
             <span>Subtotal</span>

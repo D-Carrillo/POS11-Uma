@@ -66,10 +66,10 @@
 
 }
 
-.add-item-button {
+.Add-item-button {
     background-color: #007bff;
     margin-top: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     padding: 10px;
     color: white;
 }

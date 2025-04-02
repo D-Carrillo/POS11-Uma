@@ -1,13 +1,6 @@
-/* General Reset */
-  .bodies {
-    font-family: sans-serif;
-    background: #f5f5f5;
-    margin: 0;
-    padding: 20px;
-  }
 
-  /* Checkout container styling */
   .checkout-container {
+    margin-top: 50px;
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
@@ -19,7 +12,7 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   }
   
-  /* Order Summary Styles */
+
   .order-summary {
     border-right: 1px solid #eee;
     padding-right: 20px;
@@ -51,7 +44,7 @@
     font-size: 14px;
   }
   
-  /* Payment Form Styles */
+
   form#payment-form {
     padding-left: 20px;
   }
@@ -81,7 +74,7 @@
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    display: flex;
+    flex: 1;
     justify-content: center;
     align-items: center;
     transition: background 0.2s ease;

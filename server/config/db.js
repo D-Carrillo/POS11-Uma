@@ -8,6 +8,14 @@ const db = mysql.createConnection({
   ssl: { rejectUnauthorized: true },
   port: 3306,
 });
+// const db = mysql.createConnection({
+//   host: 'localhost',
+//   user: 'root',
+//   password: '
+//   database: 'pointofsale',
+//   //ssl: { rejectUnauthorized: true },
+//   port: 3306,
+// });
 
 db.connect(err => {
   if (err) throw err;
@@ -15,3 +23,4 @@ db.connect(err => {
 });
 
 module.exports = db;
+

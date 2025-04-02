@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import "./supplier-page.css";
 
 const SupplierPage = () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -57,18 +58,22 @@ const SupplierPage = () => {
                     RetailPro
                 </div>
                 <div className="user-controls">
-                    <Link to="/shopping-cart">
+                    {/* <Link to="/shopping-cart">
                         <button className="cart-button" title="View Shopping Cart">
                             <FontAwesomeIcon icon={faShoppingCart} />
                         </button>
-                    </Link>
+                    </Link> */}
                     <div className="user-info">
-                        <button className="user-button">{user.first_name}</button>
+                        <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
+                          <button className="user-button">{user.first_name}</button>
+                        </Link>
                     </div>
                 </div>
             </div>
 
             <h1>Welcome, {user.first_name} {user.last_Name}</h1>
+
+            <button className="Add-item-button">Add Item</button>
 
             {/* Period Selector */}
             <div className="period-selector">
@@ -79,6 +84,7 @@ const SupplierPage = () => {
                     <option value="yearly">Yearly</option>
                 </select>
             </div>
+
 
             {/* Report Table */}
             {loading && <p>Loading...</p>}
