@@ -9,6 +9,7 @@ import Login from './login';
 import UserPage from './user-page';
 import SupplierForm from './SupplierForm';
 import SupplierPage from './supplier-page';
+import ItemEntryForm from './item-entry';
 
 function App() {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -16,14 +17,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path = "/" element = { user ? <Landing /> : <Navigate to = "/login" /> } />
-        <Route path = "/login" element = {!user ? <Login /> : <Navigate to = "/"/>} />
-        <Route path = "/user-page" element = {<UserPage />} />
-        <Route path = "/supplier-page" element = {<SupplierPage/>} />
-        <Route path = "/customer-entry-form" element = {!user ? <CustomerEntryForm /> : <Navigate to = "/"/>} />
-        <Route path = "/shopping-cart"  element = {<ShoppingCart/>} />
-        <Route path = "/checkout"  element = {<Checkout/>} />
-        <Route path = "/supplier-entry-form" element = {!user ? <SupplierForm /> : <Navigate to = "/"/>} />
+        <Route path="/" element={user ? <Landing /> : <Navigate to="/login" />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/user-page" element={<UserPage />} />
+        <Route path="/supplier-page" element={<SupplierPage />} />
+        <Route path="/customer-entry-form" element={!user ? <CustomerEntryForm /> : <Navigate to="/" />} />
+        <Route path="/shopping-cart" element={<ShoppingCart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/supplier-entry-form" element={!user ? <SupplierForm /> : <Navigate to="/" />} />
+        <Route path="/item-entry" element={!user ? <ItemEntryForm /> : <Navigate to="/" />} />
 
       </Routes>
     </Router>
