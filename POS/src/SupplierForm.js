@@ -47,11 +47,11 @@ const CustomerEntryForm = () => {
     }
 
     return (
-        <div className="first">
+        <div className="first-section">
             <div className="customerEntryForm">
                 <h1>Supplier Sign Up</h1>
                 <form onSubmit={handleSubmit}>
-                    
+
                     {/* Personal Information Section */}
                     <div className="form-section">
                         <h2>Personal Information</h2>

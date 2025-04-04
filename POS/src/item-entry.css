@@ -1,9 +1,9 @@
 /* General form container styling */
-.first-section {
-    background-image: url("supplier-store.jpg");
+.first {
+    min-height: 100vh;
+    background-image: url("item-entry.jpg");
     background-size: cover;
     background-position: center;
-    background-repeat: repeat;
   }
   .customerEntryForm {
     max-width: 800px;
