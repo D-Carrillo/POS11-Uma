@@ -28,5 +28,11 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
+app.use(cors({
+  origin: 'http://localhost:3000', // Your React app's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -83,6 +83,19 @@ const Login = () => {
                         <p>
                             Don't have an account? <Link to = {typeOfUser === 'supplier' ? '/supplier-entry-form' : '/customer-entry-form'}>Sign Up</Link> 
                         </p>
+
+                        {error && (
+                            <div className="error-message-for-login" style={{
+                            color: '#002366',
+                            padding: '10px',
+                            margin: '10px 0',
+                            border: '1px dark red',
+                            borderRadius: '4px',
+                            backgroundColor: '#ffebee'
+                            }}>
+                            ⚠️ Unable to Access
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -14,7 +14,7 @@ exports.login = (req, res) => {
       idField = 'Supplier_ID'; // Column name for supplier ID
     }
   
-    const query = `SELECT first_name, last_Name, password, ${idField} FROM ${table} WHERE Email = ?`;
+    const query = `SELECT first_name, last_Name, password, ${idField} FROM ${table} WHERE Email = ? And is_deleted = 0`;
     
     db.query(query, [email], (err, results) => {
       if (err) return res.status(500).send(err);
@@ -37,3 +37,114 @@ exports.login = (req, res) => {
       });
     });
   };
+
+exports.getUser = async (req, res) => {
+  try {
+    const { id, type } = req.params;
+    const table = type === 'customer' ? 'customer' : 'supplier';
+    const idField = type === 'customer' ? 'Customer_ID' : 'Supplier_ID';
+    
+    const query = `SELECT * FROM ${table} WHERE ${idField} = ?`;
+    db.query(query, [id], (err, results) => {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      if (results.length === 0) return res.status(404).json({ error: 'User not found' });
+      
+      const user = results[0];
+      delete user.password; 
+
+      res.json(user);
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+      const { id, type } = req.params;
+      const updates = req.body;
+      
+      
+      if (!['customer', 'supplier'].includes(type)) {
+          return res.status(400).json({
+              success: false,
+              error: 'Invalid user type'
+          });
+      }
+
+      const fields = Object.keys(updates);
+      if (fields.length === 0) {
+          return res.status(400).json({
+              success: false,
+            error: 'No fields to update'
+          });
+      }
+
+      const idField = type === 'customer' ? 'Customer_ID' : 'Supplier_ID';
+      const setClause = fields.map(field => `${field} = ?`).join(', ');
+      const values = fields.map(field => updates[field]);
+      values.push(id);
+
+      const query = `UPDATE ${type} SET ${setClause} WHERE ${idField} = ?`;
+        
+      db.query(query, values, (err, result) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({
+            success: false,
+            error: 'Database error during update'
+          });
+        }
+            
+        if (result.affectedRows === 0) {
+          return res.status(404).json({
+              success: false,
+              error: 'User not found'
+              });
+        }
+
+        res.json({
+            success: true,
+            message: 'User updated successfully'
+            });
+      });
+
+    } catch (error) {
+        console.error('Update error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error during update'
+        });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id, type } = req.params;
+    const tableName = type === 'customer' ? 'customer' : 'supplier';
+    const idField = type === 'customer' ? 'Customer_ID' : 'Supplier_ID';
+
+    
+    await db.promise().query(
+      `UPDATE ${tableName} SET is_deleted = TRUE WHERE ${idField} = ?`,
+      [id]
+    );
+
+    
+    if (type === 'supplier') {
+      await db.promise().query(
+        `UPDATE item SET is_deleted = TRUE WHERE supplier_id = ?`,
+        [id]
+      );
+    }
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error during deletion'
+    });
+  }
+};
