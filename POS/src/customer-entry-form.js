@@ -99,10 +99,10 @@ const CustomerEntryForm = () => {
                                 value={payment}
                                 onChange={(e) => setPayment(e.target.value)}
                             >
-                                <option value="Select">Select</option>
-                                <option value="Visa">Visa</option>
-                                <option value="Mastercard">Mastercard</option>
-                                <option value="American Express">American Express</option>
+                                <option value="Cash">Select</option>
+                                <option value="Card">Visa</option>
+                                <option value="Online">Mastercard</option>
+                                <option value="Other">American Express</option>
                             </select>
                         </div>
                         <div className="form-group">
