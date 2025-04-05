@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Country, State } from 'country-state-city';
 import './SupplierForm.css';
 
-const CustomerEntryForm = () => {
+const SupplierForm = () => {
     {/* Variables that the customer would contain */}
     const [firstName, setfirstName] = useState('');
     const [middleInitial, setmiddleInitial] = useState('');
@@ -22,7 +22,7 @@ const CustomerEntryForm = () => {
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedState, setSelectedState] = useState('');
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
+    
 
     const countries = Country.getAllCountries();
     const state = selectedCountry ? State.getStatesOfCountry(selectedCountry) : [];
@@ -229,4 +229,4 @@ const CustomerEntryForm = () => {
     );
 }
 
-export default CustomerEntryForm;
+export default SupplierForm;

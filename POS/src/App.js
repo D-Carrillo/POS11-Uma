@@ -25,7 +25,7 @@ function App() {
         <Route path="/shopping-cart" element={<ShoppingCart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/supplier-entry-form" element={!user ? <SupplierForm /> : <Navigate to="/" />} />
-        <Route path="/item-entry" element={!user ? <ItemEntryForm /> : <Navigate to="/" />} />
+        <Route path="/item-entry" element={ <ItemEntryForm /> } />
 
       </Routes>
     </Router>

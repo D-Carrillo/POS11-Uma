@@ -27,6 +27,7 @@ function Landing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('default');
+  const [displayProducts, setDisplayProducts] = useState(products);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -45,17 +46,31 @@ function Landing() {
   }, []);
 
   const getSortedProducts = () => {
-    const productsToSort = [...products];
+    //const productsToSort = [...products];
+    const productsToSort = products.slice();
+
+    console.log(productsToSort);
 
     switch (sortOption){
       case 'lowToHigh':
-        return productsToSort.sort((a,b) =>a.price - b.price);
+        return productsToSort.sort((a,b) =>Number(a.price) - Number(b.price));
       case 'highToLow':
-        return productsToSort.sort((a,b) => b.price - a.price);
+        return productsToSort.sort((a,b) => Number(b.price) - Number(a.price));
       default:
-        return products;
+        return products.slice();
     }
   };
+
+  const sortProducts = () => {
+    const sorted = getSortedProducts();
+
+    setDisplayProducts(sorted);
+  }
+
+  useEffect (() =>{
+    sortProducts();
+
+  }, [sortOption, products]);
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
@@ -65,8 +80,12 @@ function Landing() {
   const handleCategoryClick = (category) => setActiveCategory(category);
   const handleMenuItemClick = (menuItem) => setActiveMenuItem(menuItem);
   const handleProductClick = (product) => {
-    localStorage.setItem('selectedProduct', JSON.stringify(product));
-    window.location.href = '/checkout';
+    if (user.type === "customer"){
+      localStorage.setItem('selectedProduct', JSON.stringify(product));
+      window.location.href = '/checkout';
+    }else {
+      alert('Need to be a customer for Checkout!');
+    }
   }
 
   if (loading) return <div>Loading...</div>;
@@ -148,7 +167,7 @@ function Landing() {
                 onChange = {(e) => setSortOption(e.target.value)}
               >
                 <option value="default">Select</option>
-                <option value="LowToHigh">Price: Low to High</option>
+                <option value="lowToHigh">Price: Low to High</option>
                 <option value="highToLow">Price: High to Low</option>
                 {/*<option>Best Selling</option>
                 <option>Newest First</option>*/}
@@ -161,7 +180,7 @@ function Landing() {
               </select>
             </div>
             <div className="product-grid">
-              {getSortedProducts().map((product) => (
+              {displayProducts.map((product) => (
                 <div 
                   key={product.id} 
                   className="product-card" 
@@ -170,6 +189,7 @@ function Landing() {
                   <div className="product-details">
                     <div className="product-title">{product.Name}</div>
                     <div className="product-price">${product.price}</div>
+                    <div className="description">{product.description}</div>
                     <div className="product-inventory">In stock: {product.stock_quantity}</div>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-/* General form container styling */
+
 .first {
     min-height: 100vh;
     background-image: url("item-entry.jpg");
@@ -14,14 +14,13 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
-  /* Form heading */
   .customerEntryForm h1 {
     text-align: center;
     margin-bottom: 20px;
     color: #333;
   }
 
-  /* Form group styling */
+
   .customerEntryForm label {
     display: block;
     margin-bottom: 5px;
@@ -49,7 +48,7 @@
   .customerEntryForm select,
   .customerEntryForm textarea {
     flex: 1;
-    width: calc(50% - 10px); /* Take half the space minus gap */
+    width: calc(50% - 10px); 
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -57,7 +56,7 @@
     box-sizing: border-box;
   }
 
-  /* Full-width input and select for single column layout */
+
   .customerEntryForm input[type="text"].full-width,
   .customerEntryForm input[type="email"].full-width,
   .customerEntryForm input[type="tel"].full-width,
@@ -68,7 +67,6 @@
     width: 100%;
   }
 
-  /* Focus state for inputs and selects */
   .customerEntryForm input:focus,
   .customerEntryForm select:focus,
   .customerEntryForm textarea:focus {
@@ -77,13 +75,13 @@
     box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
   }
 
-  /* Disabled state for the state dropdown */
+  
   .customerEntryForm select:disabled {
     background-color: #f0f0f0;
     cursor: not-allowed;
   }
 
-  /* Button styling */
+  
   .customerEntryForm button {
     flex: 1;
     display: block;
@@ -98,7 +96,7 @@
     margin-top: 20px;
   }
 
-  /* Button hover effect */
+
   .customerEntryForm button:hover {
     background-color: #0a377a;
   }
@@ -113,7 +111,6 @@
       font-size: 24px;
     }
 
-    /* Adjust form groups to single column on smaller screens */
     .customerEntryForm .form-group {
       flex-direction: column;
     }

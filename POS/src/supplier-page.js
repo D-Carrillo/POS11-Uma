@@ -12,6 +12,16 @@ const SupplierPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [editMode, setEditMode] = useState(false);
+    const [products, setProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(false);
+    const [productsError, setProductsError] = useState(null);
+    const [editingItem, setEditingItem] = useState(null);
+    const [tempItemData, setTempItemData] = useState({
+    Name: '',
+    description: '',
+    price: 0,
+    quantity: 0
+    });
     const [userData, setUserData] = useState({
         Company_Name: '',
         first_name: '',
@@ -58,7 +68,28 @@ const SupplierPage = () => {
     useEffect(() => {
         fetchSupplierReport();
         fetchUserData();
+        fetchSupplierProducts();
     }, [period, user?.id]);
+
+    const fetchSupplierProducts = async () => {
+        if (!user?.id) {
+            setProductsError('Supplier ID not available');
+            return;
+        }
+
+        setProductsLoading(true);
+        setProductsError(null);
+
+        try {
+            const response = await axios.get(`http://localhost:5000/api/items/supplier/${user.id}`);
+            setProducts(response.data);
+        } catch (err) {
+            console.error('Error fetching supplier products:', err);
+            setProductsError('Failed to fetch products');
+        } finally {
+            setProductsLoading(false);
+        }
+    };
 
     const fetchUserData = async () => {
         try {
@@ -127,6 +158,9 @@ const SupplierPage = () => {
         window.location.href = '/login';
     };
 
+    const handleItemAdd = () => {
+        window.location.href = "/item-entry";
+    }
 
 
     const handleDeleteAccount = async () => {
@@ -152,6 +186,65 @@ const SupplierPage = () => {
         };
     }
 
+    const handleDelete = async (item_Id) => {
+        if (!window.confirm('Are you sure you want to delete this Product?')) return;
+
+        try {
+            await axios.post(`http://localhost:5000/api/items/deleteitem/${item_Id}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+            
+            fetchSupplierProducts();
+            alert('Item deleted successfully');
+          } catch (err) {
+            console.error('Delete failed:', err);
+            alert('Failed to delete item');
+          }
+    };
+    
+    const startEditing = (product) => {
+        setEditingItem(product.item_id);
+        setTempItemData({
+          Name: product.Name,
+          description: product.description,
+          price: product.price,
+          quantity: product.quantity
+        });
+      };
+      
+      const cancelEditing = () => {
+        setEditingItem(null);
+      };
+      
+      const handleTempChange = (e) => {
+        const { name, value } = e.target;
+        setTempItemData(prev => ({
+          ...prev,
+          [name]: name === 'price' || name === 'quantity' ? Number(value) : value
+        }));
+      };
+      
+      const saveChanges = async () => {
+        try {
+          await axios.put(
+            `http://localhost:5000/api/items/modify/${editingItem}`,
+            tempItemData,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            }
+          );
+          fetchSupplierProducts(); // Refresh the list
+          setEditingItem(null);
+          alert('Item updated successfully!');
+        } catch (err) {
+          console.error('Update failed:', err);
+          alert('Failed to update item');
+        }
+      };
 
     return (
         <div className="user-page">
@@ -245,7 +338,7 @@ const SupplierPage = () => {
                                 <input
                                     type="date"
                                     name="DOB"
-                                    value={userData.DOB}
+                                    value={userData.dob}
                                     onChange={handleInputChange}
                                 />
                             </div>
@@ -342,7 +435,7 @@ const SupplierPage = () => {
                             <p><strong>Contact Person:</strong> {userData.first_name} {userData.middle_Initial && `${userData.middle_Initial}. `}{userData.last_Name}</p>
                             <p><strong>Email:</strong> {userData.Email}</p>
                             <p><strong>Phone:</strong> {userData.Phone_Number}</p>
-                            <p><strong>Date of Birth:</strong> {userData.DOB || 'Not specified'}</p>
+                            <p><strong>Date of Birth:</strong> {userData.dob?.split('T')[0] || 'Not specified'}</p>
                         </div>
                         <div className="info-section">
                             <h3>Address</h3>
@@ -367,7 +460,124 @@ const SupplierPage = () => {
                 )}
             </div>
 
-            <button className="Add-item-button">Add Item</button>
+            <div className="products-section">
+                <h2>Your Products</h2>
+                {productsLoading && <p>Loading products...</p>}
+                {productsError && <p className="error">{productsError}</p>}
+                {!productsLoading && !productsError && products.length > 0 ? (
+                    <table className="products-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Modify</th>
+                                <th>Delete </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products.map((product) => (
+                                <tr key={product.item_id}>
+                                <td>
+                                    {editingItem === product.item_id ? (
+                                    <input
+                                        type="text"
+                                        name="Name"
+                                        value={tempItemData.Name || ''}
+                                        onChange={handleTempChange}
+                                        className="edit-input"
+                                    />
+                                    ) : (
+                                    product.Name
+                                    )}
+                                </td>
+                                <td>
+                                    {editingItem === product.item_id ? (
+                                    <input
+                                        type="text"
+                                        name="description"
+                                        value={tempItemData.description || ''}
+                                        onChange={handleTempChange}
+                                        className="edit-input"
+                                    />
+                                    ) : (
+                                    product.description
+                                    )}
+                                </td>
+                                <td>
+                                    {editingItem === product.item_id ? (
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        name="price"
+                                        value={tempItemData.price || ''}
+                                        onChange={handleTempChange}
+                                        className="edit-input"
+                                    />
+                                    ) : (
+                                    `$${Number(product.price).toFixed(2)}`
+                                    )}
+                                </td>
+                                <td>
+                                    {editingItem === product.item_id ? (
+                                    <input
+                                        type="number"
+                                        name="quantity"
+                                        value={tempItemData.quantity || ''}
+                                        onChange={handleTempChange}
+                                        className="edit-input"
+                                    />
+                                    ) : (
+                                    product.quantity
+                                    )}
+                                </td>
+                                <td className='action-buttons'>
+                                    {editingItem === product.item_id ? (
+                                    <>
+                                        <button 
+                                        onClick={saveChanges} 
+                                        className="save-button"
+                                        >
+                                        Save
+                                        </button>
+                                        <button 
+                                        onClick={cancelEditing} 
+                                        className="cancel-button"
+                                        >
+                                        Cancel
+                                        </button>
+                                    </>
+                                    ) : (
+                                    <button 
+                                        onClick={() => startEditing(product)} 
+                                        className="modify-button"
+                                    >
+                                        Modify
+                                    </button>
+                                    )}
+                                </td>
+
+                                <td className='action-buttons'>
+                                    <button 
+                                    onClick={() => handleDelete(product.item_id)} 
+                                    className="delete-button"
+                                    disabled={editingItem === product.item_id} 
+                                    >
+                                    Delete
+                                    </button>
+                                </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                    </table>
+                ) : (
+                    !productsLoading && <p>No products found.</p>
+                )}
+            </div>
+
+            <button className="Add-item-button" onClick={handleItemAdd}>Add Item</button>
+
 
             <div className="period-selector">
                 <label htmlFor="period">Select Period:</label>
