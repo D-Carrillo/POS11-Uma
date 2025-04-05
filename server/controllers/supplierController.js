@@ -30,3 +30,4 @@ exports.register = (req, res) => {
     });
   });
 };
+

@@ -34,7 +34,7 @@ const Checkout = () => {
 
     const subtotal = selectedProduct.price;
     const tax = subtotal * 0.08;
-    const total = subtotal + tax;
+    const total = parseFloat(subtotal) + parseFloat(tax);
 
     setTotals({
       subtotal: parseFloat(subtotal).toFixed(2),
