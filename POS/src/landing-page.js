@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './landing-page.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faBars, 
-  faExpand, 
-  faShoppingCart, 
-  faHome, 
-  faTag, 
-  faUsers, 
-  faChartBar, 
-  faBoxes, 
-  faPercent, 
-  faCog, 
-  faQuestionCircle 
+import {
+  faBars,
+  faExpand,
+  faShoppingCart,
+  faHome,
+  faTag,
+  faUsers,
+  faChartBar,
+  faBoxes,
+  faPercent,
+  faCog,
+  faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 
 function Landing() {
@@ -49,16 +49,25 @@ function Landing() {
     //const productsToSort = [...products];
     const productsToSort = products.slice();
 
-    console.log(productsToSort);
+    let sortedProducts = [];
 
     switch (sortOption){
       case 'lowToHigh':
-        return productsToSort.sort((a,b) =>Number(a.price) - Number(b.price));
+        sortedProducts = productsToSort.sort((a,b) =>Number(a.price) - Number(b.price));
+        break;
       case 'highToLow':
-        return productsToSort.sort((a,b) => Number(b.price) - Number(a.price));
+        sortedProducts = productsToSort.sort((a,b) => Number(b.price) - Number(a.price));
+        break;
       default:
-        return products.slice();
+        sortedProducts = products.slice();
     }
+
+    if (activeCategory !== 'All Products') {
+      sortedProducts = sortedProducts.filter(product => product.Category_name === activeCategory);
+    }
+
+    console.log(sortedProducts);
+    return sortedProducts;
   };
 
   const sortProducts = () => {
@@ -70,7 +79,7 @@ function Landing() {
   useEffect (() =>{
     sortProducts();
 
-  }, [sortOption, products]);
+  }, [sortOption, products, activeCategory]);
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
@@ -181,9 +190,9 @@ function Landing() {
             </div>
             <div className="product-grid">
               {displayProducts.map((product) => (
-                <div 
-                  key={product.id} 
-                  className="product-card" 
+                <div
+                  key={product.id}
+                  className="product-card"
                   onClick={() => handleProductClick(product)}
                 >
                   <div className="product-details">
