@@ -25,7 +25,7 @@ const itemEntry = (req, res) => {
 
             return res.status(201).json({
                 success: true,
-                itemId: result.insertId
+                itemId: results.insertId
             });
         });
 
