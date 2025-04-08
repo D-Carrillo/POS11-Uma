@@ -92,11 +92,43 @@ const modify = async (req, res) => {
     }
 };
 
+const updateStock = async (req, res) => {
+    try {
+        const itemId = req.params.itemId;
+        const { quantity } = req.body;
+        
+        // First get current stock
+        const [rows] = await db.promise().query(
+          'SELECT stock_quantity FROM item WHERE Item_ID = ?',
+          [itemId]
+        );
+        
+        if (rows.length === 0) {
+          return res.status(404).json({ error: 'Item not found' });
+        }
+        
+        const newQuantity = rows[0].stock_quantity - quantity;
+        
+        if (newQuantity < 0) {
+          return res.status(400).json({ error: 'Insufficient stock' });
+        }
+        
+        await db.promise().query(
+          'UPDATE item SET stock_quantity = ? WHERE Item_ID = ?',
+          [newQuantity, itemId]
+        );
+    
+        res.status(200).json({ success: true });
+      } catch (err) {
+        res.status(500).json({ error: 'Stock update failed' });
+      }
+};
 module.exports = {
     getAllItems,
     itemEntry,
     getSupplierItems,
     itemdelete,
-    modify
+    modify,
+    updateStock
 };
 

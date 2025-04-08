@@ -17,7 +17,7 @@ class Customer {
         last_Name: lastName,
         Phone_Number: phoneNumber,
         Email: email,
-        Apt_number: aptNum,
+        Apt_number: Number(aptNum),
         House_num: houseNum,
         Street: street,
         City: city,

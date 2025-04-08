@@ -3,6 +3,7 @@ import { useNavigate , Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 import './checkout.css';
 
 const Checkout = () => {
@@ -45,10 +46,10 @@ const Checkout = () => {
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    const { id, value } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [id]: value
+      [name]: value
     }));
   };
 
@@ -77,38 +78,78 @@ const Checkout = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic field validation
     if (!formData.cardName || !formData.cardNumber || !formData.expiry || !formData.cvv) {
       alert('Please fill in all payment fields.');
       return;
     }
     
-    // Validate card number (digits only, 16 digits)
     const cardNumber = formData.cardNumber.replace(/\s+/g, '');
     if (!/^\d{16}$/.test(cardNumber)) {
       alert('Please enter a valid 16-digit card number.');
       return;
     }
     
-    // Validate expiration date (MM/YY)
     if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiry)) {
       alert('Please enter a valid expiration date in MM/YY format.');
       return;
     }
     
-    // Validate CVV (3 digits)
     if (!/^\d{3}$/.test(formData.cvv)) {
       alert('Please enter a valid 3-digit CVV.');
       return;
     }
-    
-    // Simulate successful payment processing
-    alert('Payment successful! Your order has been placed.');
-    localStorage.removeItem('selectedProduct');
-    navigate('/');
+  
+    try {
+      
+      //create a transaction
+      const transactionResponse = await axios.post('http://localhost:5000/api/transaction', {
+        customer_id: user.id,
+        total_cost: totals.total,
+        payment_method: 'Online',
+        total_items: 1,
+        transaction_status: 1, // 1 means completed
+        total_discount: 0.00 
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      const transactionId = transactionResponse.data.transactionId;
+  
+      //Create a transaction item record
+      await axios.post('http://localhost:5000/api/transaction-item', {
+        transaction_id: transactionId,
+        item_id: product.Item_ID,
+        quantity: 1,
+        subtotal: product.price,
+        discount_id: null, 
+        discounted_price: product.price 
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      // reduce item stock
+      await axios.put(`http://localhost:5000/api/items/stock/${product.Item_ID}`, {
+        quantity: 1 // reducing stock by 1
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+  
+      alert('Payment successful! Your order has been placed.');
+      localStorage.removeItem('selectedProduct');
+      navigate('/');
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      alert('There was an error processing your order. Please try again.');
+    }
   };
 
   if(!product) return <div>Loading...</div>
@@ -163,7 +204,8 @@ const Checkout = () => {
             <label htmlFor="card-name">Cardholder Name</label>
             <input 
             type="text" 
-            id="card-name" 
+            id="card-name"
+            name="cardName" 
             placeholder="John Doe" 
             value={formData.cardName}
             onChange={handleInputChange}
@@ -196,6 +238,7 @@ const Checkout = () => {
             <input 
             type="text" 
             id="cvv" 
+            name = "cvv"
             placeholder="123" 
             maxLength="3" 
             value={formData.cvv}
