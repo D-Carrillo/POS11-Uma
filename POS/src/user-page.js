@@ -17,6 +17,9 @@ const UserPage = () => {
     const [period, setPeriod] = useState('weekly');
     const [reportData, setReportData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [expandedTransactions, setExpandedTransactions] = useState([]);
+    const [transactions, setTransactions] = useState(null);
+    const [items, setItems] = useState([]);
     const [error, setError] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [userData, setUserData] = useState({
@@ -40,6 +43,7 @@ const UserPage = () => {
     useEffect(() => { 
             fetchCustomerReports();
             fetchUserData();
+            fetchTransactions();
         }
     , [period, user?.id]);
 
@@ -75,6 +79,44 @@ const UserPage = () => {
         }
     };
 
+    const fetchTransactions = async () => {
+        if (!user?.id) return;
+        try {
+            const response = await axios.get(`http://localhost:5000/api/userTransactions/${user.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            setTransactions(response.data?.transactions || []);
+            setItems(response.data?.items || []);
+            console.log('This',response.data?.items);
+        }catch (err) {
+            console.error('Failed to fetch transactions:', err);
+            setTransactions([]);
+            setItems([]);
+        }
+    };
+
+    const toggleTransaction = (transactionID) => {
+        setExpandedTransactions(prev =>
+            prev.includes(transactionID)
+            ? prev.filter(id => id !== transactionID) : [...prev, transactionID]
+        );
+    };
+
+    const getStatusText = (status) => {
+        switch(status) {
+            case 0: return 'Return in Process';
+            case 1: return 'Completed';
+            case 2: return 'Return Completed';
+            default: return 'Unknown';
+        }
+    };
+
+    const getItemsForTransaction = (transactionID) => {
+        return (items || []).filter(item => item.Transaction_ID === transactionID);
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setUserData(prev => ({
@@ -85,22 +127,18 @@ const UserPage = () => {
 
     const handleSave = async () => {
         try {
-            // Prepare the data
             const updateData = {
                 ...userData,
-                // Format the date if it exists
                 DOB: userData.DOB ? userData.DOB.split('T')[0] : null
             };
-    
-            // Remove any empty fields
+
             Object.keys(updateData).forEach(key => {
                 if (updateData[key] === undefined || updateData[key] === '') {
                     delete updateData[key];
                 }
             });
     
-            console.log('Sending update:', updateData); // Debug log
-    
+            console.log('Sending update:', updateData); 
             const response = await axios.put(
                 `http://localhost:5000/auth/update/${user.type}/${user.id}`,
                 updateData,
@@ -111,8 +149,7 @@ const UserPage = () => {
                     }
                 }
             );
-    
-            // Handle success
+
             const updatedUser = {
                 ...user,
                 first_name: updateData.first_name,
@@ -159,6 +196,27 @@ const UserPage = () => {
 
         };
     }
+
+    const handleReturn = async (transactionId, itemId) => {
+        const returnReason = prompt("Reason for return:" );
+        if (!returnReason) return;
+
+        try {
+            const response = await axios.post(
+                'http://localhost:5000/api/returns', {
+                    transaction_id: transactionId,
+                    item_id: itemId,
+                    return_reason: returnReason
+                }, {
+                    headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
+                }
+            );
+            alert(`Return processed. Refund: $${response.data.refund_amount}`);
+            fetchTransactions();
+        }catch (err) {
+            alert('Return Failed. Please try again.');
+        }
+    };
 
     const chartData = {
         labels: reportData.map(r => r.period), 
@@ -380,6 +438,80 @@ const UserPage = () => {
 
             <div className='report-section'>
                 <h2>Purchase History</h2>
+
+                <div className='transaction-history-section'>
+                    <h2>Transaction History</h2>
+
+                    <table className='transaction-table'>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction ID</th>
+                                <th>Total Cost</th>
+                                <th>Status</th>
+                                <th>Items</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {transactions === null ? (
+                                <tr>
+                                    <td colSpan="6" className="loading-message">Loading transactions...</td>
+                                </tr>
+                            ) : transactions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="no-transactions">No transactions found</td>
+                                </tr>
+                            ) : (
+                                transactions.map(transaction => (
+                                    <React.Fragment key={transaction.Transaction_ID}>
+                                        <tr className='main-transaction-row'>
+                                            <td>{new Date(transaction.sale_time).toLocaleDateString()}</td>
+                                            <td>{transaction.Transaction_ID}</td> 
+                                            <td>${transaction.Total_cost}</td>
+                                            <td>{getStatusText(transaction.Transaction_Status)}</td>
+                                            <td>
+                                                <button 
+                                                    onClick={() => toggleTransaction(transaction.Transaction_ID)}
+                                                    className='toggle-items-button'
+                                                >
+                                                    {expandedTransactions.includes(transaction.Transaction_ID) ? 'Hide Items' : 'Show Items'}
+                                                </button>
+                                            </td>
+                                            <td>{/* Transaction actions */}</td>
+                                        </tr>
+
+                                        {expandedTransactions.includes(transaction.Transaction_ID) && 
+                                            getItemsForTransaction(transaction.Transaction_ID).map(item => (
+                                                <tr key={`${transaction.Transaction_ID}-${item.Item_ID}`} className='item-row'>
+                                                    <td colSpan="2">
+                                                        <strong>{item.item_name}</strong> 
+                                                        <div className='item-description'>{item.item_description}</div>
+                                                    </td>
+                                                    <td>
+                                                        {item.Quantity} × ${item.item_price}
+                                                    </td>
+                                                    <td>${item.Subtotal}</td>
+                                                    <td>
+                                                        {transaction.Transaction_Status === 1 && (
+                                                            <button 
+                                                                className='return-button'
+                                                                onClick={ () => handleReturn(transaction.Transaction_ID, item.Item_ID)}
+                                                            >
+                                                                Request Return
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            ))
+                                        }
+                                    </React.Fragment>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
                 <div className='period-selector'>
                     <button onClick = {() => setPeriod('weekly')} className= {period === 'weekly' ? 'active':''}>

@@ -7,6 +7,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const itemsRoutes = require('./routes/itemsRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 require('./config/db'); // Initialize DB connection
 
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api', customerRoutes);
 app.use('/api', supplierRoutes);
 app.use('/api', reportRoutes);
 app.use('/api/items', itemsRoutes);
+app.use('/api/', transactionRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

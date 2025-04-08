@@ -7,5 +7,6 @@ router.post('/item-entry', itemsController.itemEntry);
 router.get('/supplier/:supplierId',itemsController.getSupplierItems);
 router.post('/deleteitem/:itemId', itemsController.itemdelete);
 router.put('/modify/:itemId', itemsController.modify);
+router.put('/stock/:itemId', itemsController.updateStock);
 
 module.exports = router;

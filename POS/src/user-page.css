@@ -157,3 +157,161 @@
     font-size: 0.85rem;
     margin-top: 5px;
 } 
+
+/* Transaction History Styles */
+.transaction-history-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.transaction-table th {
+    background-color: #f0f0f0;
+    padding: 12px;
+    text-align: left;
+}
+
+.transaction-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.main-transaction-row {
+    background-color: #fff;
+    font-weight: bold;
+}
+
+.main-transaction-row:hover {
+    background-color: #f5f5f5;
+}
+
+.item-row {
+    background-color: #fafafa;
+}
+
+.item-row:hover {
+    background-color: #f0f0f0;
+}
+
+.item-description {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+.discounted-price {
+    color: #e74c3c;
+    font-size: 0.9em;
+}
+
+.toggle-items-button {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-weight: bold;
+}
+
+.toggle-items-button:hover {
+    text-decoration: underline;
+}
+
+.return-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.return-button:hover {
+    background-color: #c0392b;
+}
+
+
+.item-row {
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    border-left: 4px solid #3498db; 
+  }
+  
+  .item-row:hover {
+    background-color: #f1f5f9;
+  }
+  
+  .item-row td {
+    padding: 10px 15px;
+    vertical-align: top;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .item-row td:first-child {
+    width: 40%;
+  }
+  
+  .item-row td:nth-child(3) {
+    font-family: 'Courier New', monospace;
+    color: #4b5563;
+  }
+  
+  .item-row td:nth-child(4) {
+    font-weight: 600;
+    color: #1e40af;
+  }
+  
+  
+  .item-row td:nth-child(5) {
+    text-align: center;
+  }
+  
+
+  .item-row strong {
+    display: block;
+    color: #1e3a8a;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+  
+
+  .item-description {
+    color: #64748b;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  
+
+  .return-button {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .return-button:hover {
+    background-color: #fee2e2;
+  }
+  
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .item-row {
+    animation: fadeIn 0.3s ease-out;
+  }
