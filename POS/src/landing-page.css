@@ -146,6 +146,24 @@
     transition: background-color 0.2s;
   }
 
+  .login-button-landing {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    width: 100px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+  }
+
+  .login-button-landing {
+    background-color: var(--hover-color);
+  }
+
   .user-button:hover {
     background-color: var(--hover-color);
   }

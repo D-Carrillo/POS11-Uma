@@ -34,16 +34,28 @@
     padding-top: 15px;
     border-top: 1px solid #eee;
   }
-  #summary-items {
-    margin-bottom: 20px;
-  }
-  #summary-items .summary-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 14px;
-  }
-  
+/* Order Summary Items */
+#summary-items {
+  margin: 1rem 0;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item-list {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
 
   form#payment-form {
     padding-left: 20px;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate , Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
@@ -7,15 +7,10 @@ import axios from 'axios';
 import './checkout.css';
 
 const Checkout = () => {
-  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
-  const [product, setProduct] = useState(null);
-
-  const [totals, setTotals] = useState({
-    subtotal: 0,
-    tax: 0,
-    total: 0
-  });
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
     cardName: '',
@@ -26,23 +21,23 @@ const Checkout = () => {
 
   // Calculate totals on component mount
   useEffect(() => {
-    const selectedProduct = JSON.parse(localStorage.getItem('selectedProduct'));
-    if(!selectedProduct) {
-      navigate('/');
-      return;
+    try {
+      const savedCart = JSON.parse(localStorage.getItem('checkoutCart'));
+      if (!savedCart || !savedCart.items || savedCart.items.length === 0) {
+        window.location.href = '/shopping-cart';
+        return;
+      }
+      if (!savedCart.totals || typeof savedCart.totals !== 'object') {
+        throw new Error('Invalid cart totals');
+      }
+      setCart(savedCart);
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to load cart:', err);
+      setError('Failed to load your cart. Please try again.');
+      window.location.href = '/shopping-cart';
     }
-    setProduct(selectedProduct);
-
-    const subtotal = selectedProduct.price;
-    const tax = subtotal * 0.08;
-    const total = parseFloat(subtotal) + parseFloat(tax);
-
-    setTotals({
-      subtotal: parseFloat(subtotal).toFixed(2),
-      tax: tax.toFixed(2),
-      total: parseFloat(total).toFixed(2)
-    });
-}, [navigate]);
+  }, []);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -107,9 +102,9 @@ const Checkout = () => {
       //create a transaction
       const transactionResponse = await axios.post('http://localhost:5000/api/transaction', {
         customer_id: user.id,
-        total_cost: totals.total,
+        total_cost: cart.totals.total,
         payment_method: 'Online',
-        total_items: 1,
+        total_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
         transaction_status: 1, // 1 means completed
         total_discount: 0.00 
       }, {
@@ -121,38 +116,53 @@ const Checkout = () => {
       const transactionId = transactionResponse.data.transactionId;
   
       //Create a transaction item record
-      await axios.post('http://localhost:5000/api/transaction-item', {
-        transaction_id: transactionId,
-        item_id: product.Item_ID,
-        quantity: 1,
-        subtotal: product.price,
-        discount_id: null, 
-        discounted_price: product.price 
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      await Promise.all(cart.items.map(async (item) => {
+        await axios.post('http://localhost:5000/api/transaction-item', {
+          transaction_id: transactionId,
+          item_id: item.Item_ID,
+          quantity: item.quantity,
+          subtotal: item.price * item.quantity,
+          discount_id: null, 
+          discounted_price: item.price * item.quantity 
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
   
-      // reduce item stock
-      await axios.put(`http://localhost:5000/api/items/stock/${product.Item_ID}`, {
-        quantity: 1 // reducing stock by 1
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+        // reduce item stock
+        await axios.put(`http://localhost:5000/api/items/stock/${item.Item_ID}`, {
+          quantity: item.quantity // reducing stock by 1
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+      }));
   
       alert('Payment successful! Your order has been placed.');
-      localStorage.removeItem('selectedProduct');
-      navigate('/');
+      localStorage.removeItem('checkoutCart');
+      localStorage.removeItem('cart');
+      window.location.href = '/';
     } catch (error) {
       console.error('Checkout failed:', error);
       alert('There was an error processing your order. Please try again.');
     }
   };
 
-  if(!product) return <div>Loading...</div>
+  if (loading) {
+    return <div className="loading-container">Loading your cart...</div>;
+  }
+
+  if (error) {
+    return <div className="error-container">{error}</div>;
+  }
+
+  if (!cart || !cart.items) {
+    return null;
+  }
+  
+  if(!cart.items.length ) return <div>Loading...</div>
   return (
     <div className='bodies'>
           <div className='top-user-nav'>
@@ -161,11 +171,6 @@ const Checkout = () => {
               RetailPro
             </div>
             <div className="user-controls">             
-                 {/* <Link to="/shopping-cart">
-                  <button className="cart-button" title="View Shopping Cart">
-                  <FontAwesomeIcon icon={faShoppingCart} />
-                  </button>
-              </Link> */}
               <div className="user-info">
                 <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
                   <button className="user-button">{user.first_name}</button>
@@ -178,22 +183,24 @@ const Checkout = () => {
         <div className="order-summary">
             <h2>Order Summary</h2>
             <div id="summary-items">
-            <div className="summary-item">
-              <span>{product.Name} x 1</span>
-              <span>${parseFloat(product.price).toFixed(2)}</span>
-            </div>
+              {cart.items.map(item => (
+                <div className='summary-item' key={item.Item_ID}>
+                  <span>{item.Name} x {item.quantity}</span>
+                  <span>${parseFloat(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
             </div>
             <div className="summary-row">
             <span>Subtotal</span>
-            <span id="subtotal">${totals.subtotal}</span>
+            <span id="subtotal">${cart.totals.subtotal}</span>
             </div>
             <div className="summary-row">
             <span>Tax (8%)</span>
-            <span id="tax">${totals.tax}</span>
+            <span id="tax">${cart.totals.tax}</span>
             </div>
             <div className="summary-row total">
             <span>Total</span>
-            <span id="total">${totals.total}</span>
+            <span id="total">${cart.totals.total}</span>
             </div>
         </div>
         

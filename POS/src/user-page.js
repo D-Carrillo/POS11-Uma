@@ -170,7 +170,7 @@ const UserPage = () => {
 
     const handleSignOut = async () => {
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/';
 
     };
 
