@@ -245,6 +245,10 @@ function Landing() {
                   className="product-card"
                   onClick={() => handleProductClick(product)}
                 >
+                  <div
+                    className="product-image"
+                    style={{backgroundImage: `url(${product.image_url})`}}>
+                  </div>
                   <div className="product-details">
                     <div className="product-title">{product.Name}</div>
                     <div className="product-price">${product.price}</div>

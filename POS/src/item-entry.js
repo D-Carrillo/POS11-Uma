@@ -11,6 +11,7 @@ const ItemEntryForm = () => {
     const [price, setPrice] = useState(null);
     const [reorderThreshold, setReorderThreshold] = useState(null);
     const [category, setCategory] = useState(null);
+    const [imageURL, setImageURL] = useState('');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -20,7 +21,7 @@ const ItemEntryForm = () => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/api/items/item-entry', {
-                itemName, itemDescription, price, quantity, reorderThreshold, id, category 
+                itemName, itemDescription, price, quantity, reorderThreshold, id, category, imageURL
             });
             if (response.data?.itemId) {
                 window.location.href = '/supplier-page';
@@ -105,7 +106,19 @@ const ItemEntryForm = () => {
                                 required
                             />
                         </div>
+                        <div className="form-group">
+                            <label>Image URL</label>
+                            <input
+                                type="text"
+                                value={imageURL}
+                                onChange={(e) => setImageURL(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
+                    <small style={{ color: '#666', fontSize: '12px' }}>
+                        Image should have 1:1 ratio and have a transparent background for best results.
+                    </small>
                     {error && (
                             <div className="error-message-for-login" style={{
                             color: '#002366',
