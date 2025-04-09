@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+import DiscountModal from './discountModal';
 import axios from 'axios';
 import "./supplier-page.css";
+
 
 const SupplierPage = () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -16,6 +18,8 @@ const SupplierPage = () => {
     const [productsLoading, setProductsLoading] = useState(false);
     const [productsError, setProductsError] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedItemId, setSelectedItemId] = useState(null);
     const [tempItemData, setTempItemData] = useState({
     Name: '',
     description: '',
@@ -155,7 +159,7 @@ const SupplierPage = () => {
 
     const handleSignOut = () => {
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/';
     };
 
     const handleItemAdd = () => {
@@ -212,19 +216,20 @@ const SupplierPage = () => {
           price: product.price,
           quantity: product.quantity
         });
-      };
+    };
       
-      const cancelEditing = () => {
+    const cancelEditing = () => {
         setEditingItem(null);
-      };
+    };
       
-      const handleTempChange = (e) => {
+    const handleTempChange = (e) => {
         const { name, value } = e.target;
         setTempItemData(prev => ({
           ...prev,
           [name]: name === 'price' || name === 'quantity' ? Number(value) : value
         }));
-      };
+    };
+
       
       const saveChanges = async () => {
         try {
@@ -245,6 +250,10 @@ const SupplierPage = () => {
           alert('Failed to update item');
         }
       };
+
+    const handleCreateDiscount = (discountData) => {
+        console.log(discountData)
+    };
 
     return (
         <div className="user-page">
@@ -473,6 +482,7 @@ const SupplierPage = () => {
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th>Modify</th>
+                                <th>Add Discount</th>
                                 <th>Delete </th>
                             </tr>
                         </thead>
@@ -556,7 +566,27 @@ const SupplierPage = () => {
                                         Modify
                                     </button>
                                     )}
+
                                 </td>
+                                <td className="action-buttons">
+                                    <button
+                                        onClick = {() => {setSelectedItemId(product.item_id);
+                                            setIsModalOpen(true);
+                                        }}
+                                        className="discount-button"
+                                    >
+                                    Discount
+                                    </button>
+
+                                    <DiscountModal
+                                        isOpen = {isModalOpen}
+                                        onClose = {() => setIsModalOpen(false)}
+                                        onSubmit={handleCreateDiscount}
+                                        itemId={selectedItemId}
+                                    />
+                                </td>
+
+                                
 
                                 <td className='action-buttons'>
                                     <button 

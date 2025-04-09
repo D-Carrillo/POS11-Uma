@@ -126,8 +126,8 @@
 }
 
 .quantity-btn {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border: 1px solid #e0e0e0;
     background-color: #f7f7f7;
     border-radius: 4px;
@@ -136,6 +136,7 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 14px;
 }
 
 .quantity-btn:hover {
@@ -224,7 +225,7 @@
 .checkout-page {
     width: 100%;
     padding: 12px 0;
-    background-color: #4CAF50;
+    background-color: #4a6cf7;
     color: white;
     border: none;
     border-radius: 4px;
@@ -238,7 +239,7 @@
 }
 
 .checkout-page:hover {
-    background-color: #43a047;
+    background-color: #4a6cf7;
 }
 
 .checkout-page i {
@@ -262,6 +263,54 @@
 .cart-button.active {
     color: #4a6cf7;
 }
+
+.empty-cart {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  
+  .empty-cart p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  .empty-cart button {
+    padding: 10px 20px;
+    background-color: #4a6cf7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .empty-cart button:hover {
+    background-color: #3a5ce5;
+  }
+  
+
+  .item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+  }
+  
+  .item-quantity input {
+    width: 50px; 
+    height: 32px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    padding: 0 5px; 
+    margin: 0 5px; 
+  }
+
 
 .cart-count {
     position: absolute;
