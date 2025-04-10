@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './landing-page.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faBars, 
-  faExpand, 
-  faShoppingCart, 
-  faHome, 
-  faTag, 
-  faUsers, 
-  faChartBar, 
-  faBoxes, 
-  faPercent, 
-  faCog, 
-  faQuestionCircle 
+import {
+  faBars,
+  faExpand,
+  faShoppingCart,
+  faHome,
+  faTag,
+  faUsers,
+  faChartBar,
+  faBoxes,
+  faPercent,
+  faCog,
+  faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
 
 function Landing() {
@@ -27,6 +27,8 @@ function Landing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('default');
+  const [displayProducts, setDisplayProducts] = useState(products);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -44,18 +46,57 @@ function Landing() {
     fetchProducts();
   }, []);
 
-  const getSortedProducts = () => {
-    const productsToSort = [...products];
-
-    switch (sortOption){
-      case 'lowToHigh':
-        return productsToSort.sort((a,b) =>a.price - b.price);
-      case 'highToLow':
-        return productsToSort.sort((a,b) => b.price - a.price);
-      default:
-        return products;
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/items/search?query=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Failed to fetch search results');
+      const data = await response.json();
+      console.log('Search results:', data);
+      setProducts(data);
+      setDisplayProducts(data); // Update the displayed products
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+
+
+  const getSortedProducts = useCallback(() => {
+    const productsToSort = products.slice();
+
+    let sortedProducts = [];
+
+    switch (sortOption) {
+      case 'lowToHigh':
+        sortedProducts = productsToSort.sort((a, b) => Number(a.price) - Number(b.price));
+        break;
+      case 'highToLow':
+        sortedProducts = productsToSort.sort((a, b) => Number(b.price) - Number(a.price));
+        break;
+      default:
+        sortedProducts = products.slice();
+    }
+
+    if (activeCategory !== 'All Products') {
+      sortedProducts = sortedProducts.filter(product => product.Category_name === activeCategory);
+    }
+
+    console.log(sortedProducts);
+    return sortedProducts;
+  }, [products, sortOption, activeCategory]);
+
+  const sortProducts = useCallback(() => {
+    const sorted = getSortedProducts();
+    setDisplayProducts(sorted);
+  }, [getSortedProducts]);
+
+  useEffect(() => {
+    sortProducts();
+
+  }, [sortOption, products, activeCategory, sortProducts]);
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
@@ -65,9 +106,19 @@ function Landing() {
   const handleCategoryClick = (category) => setActiveCategory(category);
   const handleMenuItemClick = (menuItem) => setActiveMenuItem(menuItem);
   const handleProductClick = (product) => {
-    localStorage.setItem('selectedProduct', JSON.stringify(product));
-    window.location.href = '/checkout';
-  }
+    if (user.type === "customer") {
+
+      const normalizedProduct = {
+        ...product,
+        price: product.price || product.Price,
+      };
+
+      localStorage.setItem('selectedProduct', JSON.stringify(normalizedProduct));
+      window.location.href = '/checkout';
+    } else {
+      alert('Need to be a customer for Checkout!');
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -84,8 +135,10 @@ function Landing() {
         </div>
         <div className="search-container">
           <div className="search-bar">
-            <input type="text" className="search-input" placeholder="Search products..." />
-            <button className="search-button">
+            <input type="text" className="search-input" placeholder="Search products..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { handleSearch(); } }} />
+            <button className="search-button" onClick={() => handleSearch()}>
               <FontAwesomeIcon icon="search" />
               <span>Search</span>
             </button>
@@ -144,11 +197,11 @@ function Landing() {
             <div className="filter-options">
               <div className="filter-label">Sort by:</div>
               <select className="filter-select"
-                value = {sortOption}
-                onChange = {(e) => setSortOption(e.target.value)}
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
               >
                 <option value="default">Select</option>
-                <option value="LowToHigh">Price: Low to High</option>
+                <option value="lowToHigh">Price: Low to High</option>
                 <option value="highToLow">Price: High to Low</option>
                 {/*<option>Best Selling</option>
                 <option>Newest First</option>*/}
@@ -161,15 +214,16 @@ function Landing() {
               </select>
             </div>
             <div className="product-grid">
-              {getSortedProducts().map((product) => (
-                <div 
-                  key={product.id} 
-                  className="product-card" 
+              {displayProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="product-card"
                   onClick={() => handleProductClick(product)}
                 >
                   <div className="product-details">
                     <div className="product-title">{product.Name}</div>
-                    <div className="product-price">${product.price}</div>
+                    <div className="product-price">${product.price || product.Price}</div>
+                    <div className="description">{product.description}</div>
                     <div className="product-inventory">In stock: {product.stock_quantity}</div>
                   </div>
                 </div>
