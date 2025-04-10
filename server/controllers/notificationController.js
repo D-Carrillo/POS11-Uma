@@ -1,26 +1,19 @@
 const db = require('../config/db');
 
-const getSupplierNotifications = async (req, res) => {
+const getSupplierNotifications = (req, res) => {
   const supplierId = req.params.supplierId;
   
-  try {
-    //debug
-    const testNotifications = [
-      {
-        notification_id: 1,
-        supplier_id: supplierId,
-        item_id: 123,
-        message: "Test notification for debugging",
-        created_at: new Date(),
-        is_read: 0
+  db.query(
+    'SELECT * FROM supplier_notification WHERE supplier_id = ? ORDER BY created_at DESC',
+    [supplierId],
+    (error, results) => {
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        return res.status(500).json({ message: 'Failed to fetch notifications' });
       }
-    ];
-    
-    res.status(200).json(testNotifications);
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Failed to fetch notifications', error: error.message });
-  }
+      res.status(200).json(results);
+    }
+  );
 };
 
 // mark notification as read
