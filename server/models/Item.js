@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 class Item {
     static getAll(callback) {
-        db.query('SELECT I.Item_ID, I.Name, I.price, I.description, I.stock_quantity, C.Category_name From Item AS I, Category as C Where I.category_ID = C.Category_ID and I.is_deleted = 0 and I.stock_quantity > 0', (err, results) => {
+        db.query('SELECT I.Item_ID, I.Name, I.price, I.description, I.stock_quantity, C.Category_name, I.image_url From Item AS I, Category as C Where I.category_ID = C.Category_ID and I.is_deleted = 0 and I.stock_quantity > 0', (err, results) => {
             if (err) return callback(err);
             callback(null, results);
         });
@@ -16,7 +16,7 @@ class Item {
     }
 
     static create(itemData, callback) {
-        const { itemName, itemDescription, price, quantity, reorderThreshold, id, category  } = itemData;
+        const { itemName, itemDescription, price, quantity, reorderThreshold, id, category, imageURL } = itemData;
 
         db.query(
           'INSERT INTO item SET ?',
@@ -27,7 +27,8 @@ class Item {
             stock_quantity: quantity,
             reorder_Threshold: reorderThreshold,
             supplier_ID: id,
-            category_ID: category
+            category_ID: category,
+            image_url: imageURL
           },
           callback
         );

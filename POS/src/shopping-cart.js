@@ -1,20 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./shopping-cart.css";
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBars, 
   faExpand, 
-  faShoppingCart, 
-  faSearch, 
-  faHome, 
-  faTag, 
-  faUsers, 
-  faChartBar, 
-  faBoxes, 
-  faPercent, 
-  faCog, 
-  faQuestionCircle, 
+  faShoppingCart,   
   faTrash, 
   faArrowLeft, 
   faMinus, 
@@ -32,44 +23,15 @@ import {
 const ShoppingCart = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      sku: "WH-2023-BLK",
-      price: 129.99,
-      quantity: 1,
-      maxQuantity: 24,
-      image: "/api/placeholder/80/80"
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      sku: "SW-2023-SLV",
-      price: 199.99,
-      quantity: 1,
-      maxQuantity: 12,
-      image: "/api/placeholder/80/80"
-    },
-    {
-      id: 3,
-      name: "Smartphone Case",
-      sku: "SC-2023-BLU",
-      price: 24.99,
-      quantity: 2,
-      maxQuantity: 56,
-      image: "/api/placeholder/80/80"
-    },
-    {
-      id: 4,
-      name: "Wireless Mouse",
-      sku: "WM-2023-BLK",
-      price: 34.99,
-      quantity: 1,
-      maxQuantity: 32,
-      image: "/api/placeholder/80/80"
-    }
-  ]);
+  const [cartItems, setCartItems] = useState(() => {
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+    
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -80,29 +42,54 @@ const ShoppingCart = () => {
     window.location.href = '/';
   };
 
-  const updateQuantity = (id, newQuantity) => {
+  const updateQuantity = (Item_ID, newQuantity) => {
     setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(1, Math.min(item.maxQuantity, newQuantity)) } : item
+      item.Item_ID === Item_ID ? { ...item, quantity:
+         Math.max(1, Math.min(item.maxQuantity, newQuantity || 99, newQuantity)) 
+        } : item
     ));
   };
 
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const removeItem = (Item_ID) => {
+    setCartItems(cartItems.filter(item => item.Item_ID !== Item_ID));
+  };
+
+  const clearCart = () => {
+    if (window.confirm('Are you sure you want to clear your cart?')) {
+      setCartItems([]);
+    }
   };
 
   const calculateTotals = () => {
+    console.log(JSON.parse(localStorage.getItem('cart')));
+
     const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const tax = subtotal * 0.08;
     const total = subtotal + tax;
     
     return {
-      subtotal: subtotal.toFixed(2),
-      tax: tax.toFixed(2),
-      total: total.toFixed(2)
+      subtotal: Number(subtotal).toFixed(2),
+      tax: Number(tax).toFixed(2),
+      total: Number(total).toFixed(2)
     };
   };
 
   const { subtotal, tax, total } = calculateTotals();
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      alert('Your card is empty!');
+      return;
+    }
+
+    localStorage.setItem('checkoutCart', JSON.stringify({
+      items: cartItems,
+      totals:calculateTotals()
+    }));
+
+    window.location.href ='/checkout';
+  }
+
 
   return (
     <div className="shopping-container">
@@ -116,13 +103,7 @@ const ShoppingCart = () => {
           RetailPro
         </div>
         
-        {/* Searchbar */}
-        <div className="search-container">
-          <div className="search-bar">
-            <input type="text" className="search-input" placeholder="Search products by name, SKU, or barcode..." />
-            <button className="search-button"><FontAwesomeIcon icon={faSearch} /> Search</button>
-          </div>
-        </div>
+
         
         {/* User Controls */}
         <div className="user-controls">
@@ -140,47 +121,7 @@ const ShoppingCart = () => {
       
       {/* Main Area */}
     <div className="landing-main-area">
-        {/* Sidebar */}
-        <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} id="sidebar">
-          <ul className="sidebar-menu">
-            <li>
-              <FontAwesomeIcon icon={faHome} />
-              Dashboard
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faTag} />
-              Products
-            </li>
-            <li className="active">
-              <FontAwesomeIcon icon={faShoppingCart} />
-              Shopping Cart
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faUsers} />
-              Customers
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faChartBar} />
-              Reports
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faBoxes} />
-              Inventory
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faPercent} />
-              Discounts
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faCog} />
-              Settings
-            </li>
-            <li>
-              <FontAwesomeIcon icon={faQuestionCircle} />
-              Help
-            </li>
-          </ul>
-        </aside>
+        
         
         {/* Main Content */}
         <div className = "main-content-container">
@@ -188,7 +129,7 @@ const ShoppingCart = () => {
             <div className="cart-header">
                 <h1><FontAwesomeIcon icon={faShoppingCart} /> Shopping Cart</h1>
                 <div className="cart-actions">
-                <button className="btn-secondary"><FontAwesomeIcon icon={faTrash} /> Clear Cart</button>
+                <button className="btn-secondary" onClick = {clearCart}><FontAwesomeIcon icon={faTrash} /> Clear Cart</button>
                 <button className="btn-primary continue-shopping" onClick={continueShopping}>
                     <FontAwesomeIcon icon={faArrowLeft} /> Continue Shopping
                 </button>
@@ -197,20 +138,26 @@ const ShoppingCart = () => {
             
             <div className="Cart-container">
                 <div className="cart-items">
+                {cartItems.length === 0 && (
+                  <div className = "empty-cart">
+                    <p>Your cart is empty</p>
+                    <button onClick = {continueShopping}>Continue Shopping</button>
+                  </div>
+                )}
                 {cartItems.map(item => (
-                    <div className="cart-item" key={item.id}>
+                    <div className="cart-item" key={item.Item_ID}>
                     <div className="item-image">
-                        <img src={item.image} alt={item.name} />
+                        <img src={item.image} alt={item.Name} />
                     </div>
                     <div className="item-details">
-                        <div className="item-name">{item.name}</div>
-                        <div className="item-sku">SKU: {item.sku}</div>
+                        <div className="item-name">{item.Name}</div>
+                        {/* <div className="item-sku">SKU: {item.sku}</div> */}
                     </div>
-                    <div className="item-price">${item.price.toFixed(2)}</div>
+                    <div className="item-price">${Number(item.price).toFixed(2)}</div>
                     <div className="item-quantity">
                         <button 
                         className="quantity-btn decrease" 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.Item_ID, item.quantity - 1)}
                         >
                         <FontAwesomeIcon icon={faMinus} />
                         </button>
@@ -219,18 +166,18 @@ const ShoppingCart = () => {
                         value={item.quantity} 
                         min="1" 
                         max={item.maxQuantity}
-                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                        onChange={(e) => updateQuantity(item.Item_ID, parseInt(e.target.value) || 1)}
                         />
                         <button 
                         className="quantity-btn increase" 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.Item_ID, item.quantity + 1)}
                         >
                         <FontAwesomeIcon icon={faPlus} />
                         </button>
                     </div>
-                    <div className="item-total">${(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="item-total">${Number(item.price * item.quantity).toFixed(2)}</div>
                     <div className="item-actions">
-                        <button className="remove-item" onClick={() => removeItem(item.id)}>
+                        <button className="remove-item" onClick={() => removeItem(item.Item_ID)}>
                         <FontAwesomeIcon icon={faTimes} />
                         </button>
                     </div>
@@ -262,7 +209,7 @@ const ShoppingCart = () => {
                     <span>Total</span>
                     <span>${total}</span>
                 </div>
-                <Link to="/checkout" onClick={() => alert('Redirecting to checkout...')}>
+                <Link to="/checkout" onClick={handleCheckout}>
                     <button className="checkout-page">
                         <FontAwesomeIcon icon={faLock} /> Proceed to Checkout
                     </button>

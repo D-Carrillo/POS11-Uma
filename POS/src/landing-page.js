@@ -18,7 +18,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 function Landing() {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     JSON.parse(localStorage.getItem('sidebarCollapsed')) || false
   );
@@ -73,13 +73,11 @@ function Landing() {
 
   const sortProducts = () => {
     const sorted = getSortedProducts();
-
     setDisplayProducts(sorted);
   }
 
-  useEffect (() =>{
+  useEffect(() => {
     sortProducts();
-
   }, [sortOption, products, activeCategory]);
 
   useEffect(() => {
@@ -90,11 +88,41 @@ function Landing() {
   const handleCategoryClick = (category) => setActiveCategory(category);
   const handleMenuItemClick = (menuItem) => setActiveMenuItem(menuItem);
   const handleProductClick = (product) => {
-    if (user.type === "customer"){
-      localStorage.setItem('selectedProduct', JSON.stringify(product));
-      window.location.href = '/checkout';
-    }else {
+    if (!user) {
+      alert ('Please log in to add items to your cart');
+      window.location.href = '/login';
+      return;
+    }
+    
+    if (user.type !== "customer") {
       alert('Need to be a customer for Checkout!');
+      return;
+    }
+  
+    const shouldAdd = window.confirm(`Add "${product.Name}" to your cart?`);
+  
+    if (shouldAdd) {
+      const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
+      
+      const existingProductIndex = existingCart.findIndex(item => item.Item_ID === product.Item_ID);
+  
+      if (existingProductIndex >= 0) {
+        if (existingCart[existingProductIndex].quantity < (product.maxQuantity || 99)) {
+          existingCart[existingProductIndex].quantity += 1;
+        } else {
+          alert(`Cannot add more - maximum quantity reached!`);
+          return;
+        }
+      } else {
+        existingCart.push({ 
+          ...product, 
+          quantity: 1,
+          maxQuantity: product.stock_quantity || 99 
+        });
+      }
+  
+      localStorage.setItem('cart', JSON.stringify(existingCart));
+      alert(`"${product.Name}" was added to your cart!`);
     }
   }
 
@@ -121,12 +149,29 @@ function Landing() {
           </div>
         </div>
         <div className="user-controls">
+          {(user && user.type === "customer") && (
+            <Link to="/shopping-cart">
+              <button className="cart-button" title="View Shopping Cart">
+                <FontAwesomeIcon icon={faShoppingCart} />
+              </button>
+            </Link>
+          )}
 
           <div className="user-info">
-            {user.type === 'supplier' && <NotificationBell />}
-            <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
-              <button className="user-button">{user.first_name}</button>
-            </Link>
+            {user ? (
+              <>
+                {user.type === 'supplier' && <NotificationBell />}
+                <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
+                  <button className="user-button">{user.first_name}</button>
+                </Link>
+              </>
+            ) : (
+              <button className='login-button-landing'
+                onClick={() => {window.location.href = '/login'}}>
+                <FontAwesomeIcon icon={faUsers} />
+                <span>Log In</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -174,8 +219,8 @@ function Landing() {
             <div className="filter-options">
               <div className="filter-label">Sort by:</div>
               <select className="filter-select"
-                value = {sortOption}
-                onChange = {(e) => setSortOption(e.target.value)}
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
               >
                 <option value="default">Select</option>
                 <option value="lowToHigh">Price: Low to High</option>
@@ -197,11 +242,18 @@ function Landing() {
                   className="product-card"
                   onClick={() => handleProductClick(product)}
                 >
+                  <div
+                    className="product-image"
+                    style={{backgroundImage: `url(${product.image_url})`}}>
+                  </div>
                   <div className="product-details">
                     <div className="product-title">{product.Name}</div>
                     <div className="product-price">${product.price}</div>
                     <div className="description">{product.description}</div>
                     <div className="product-inventory">In stock: {product.stock_quantity}</div>
+                    {!user && (
+                      <div className='loging-promt'> <a href="/login">Log in to purchase</a> </div>
+                    )}
                   </div>
                 </div>
               ))}
