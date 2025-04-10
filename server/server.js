@@ -7,6 +7,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const itemsRoutes = require('./routes/itemsRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const discountRoutes = require('./routes/discountRoutes');
 require('./config/db'); // Initialize DB connection
@@ -25,15 +26,16 @@ app.use('/api', reportRoutes);
 app.use('/api/items', itemsRoutes);
 app.use('/api/', transactionRoutes);
 app.use('/api', discountRoutes);
+app.use('/api/notifications', notificationRoutes);
 
-// Error handling middleware
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
 app.use(cors({
-  origin: 'http://localhost:3000', // Your React app's URL
+  origin: 'http://localhost:3000', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

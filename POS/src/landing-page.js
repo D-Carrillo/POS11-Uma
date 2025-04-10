@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './landing-page.css';
+import NotificationBell from './NotificationBell';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars,
@@ -72,13 +73,11 @@ function Landing() {
 
   const sortProducts = () => {
     const sorted = getSortedProducts();
-
     setDisplayProducts(sorted);
   }
 
-  useEffect (() =>{
+  useEffect(() => {
     sortProducts();
-
   }, [sortOption, products, activeCategory]);
 
   useEffect(() => {
@@ -124,8 +123,6 @@ function Landing() {
   
       localStorage.setItem('cart', JSON.stringify(existingCart));
       alert(`"${product.Name}" was added to your cart!`);
-    
-
     }
   }
 
@@ -152,26 +149,26 @@ function Landing() {
           </div>
         </div>
         <div className="user-controls">
-
-          <div className="user-controls">
-            {(user && user.type === "customer" )&& (
-              <Link to="/shopping-cart">
-                <button className="cart-button" title="View Shopping Cart">
+          {(user && user.type === "customer") && (
+            <Link to="/shopping-cart">
+              <button className="cart-button" title="View Shopping Cart">
                 <FontAwesomeIcon icon={faShoppingCart} />
-                </button>
-              </Link>
-            )}
-          </div>
+              </button>
+            </Link>
+          )}
 
           <div className="user-info">
             {user ? (
-            <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
-              <button className="user-button">{user.first_name}</button>
-            </Link>
-            ): (
+              <>
+                {user.type === 'supplier' && <NotificationBell />}
+                <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
+                  <button className="user-button">{user.first_name}</button>
+                </Link>
+              </>
+            ) : (
               <button className='login-button-landing'
-              onClick={() => {window.location.href = '/login'}}>
-                <FontAwesomeIcon icon = {faUsers} />
+                onClick={() => {window.location.href = '/login'}}>
+                <FontAwesomeIcon icon={faUsers} />
                 <span>Log In</span>
               </button>
             )}
@@ -222,8 +219,8 @@ function Landing() {
             <div className="filter-options">
               <div className="filter-label">Sort by:</div>
               <select className="filter-select"
-                value = {sortOption}
-                onChange = {(e) => setSortOption(e.target.value)}
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
               >
                 <option value="default">Select</option>
                 <option value="lowToHigh">Price: Low to High</option>
