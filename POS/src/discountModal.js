@@ -5,10 +5,11 @@ const DiscountModal = ({ isOpen, onClose, onSubmit, itemId}) => {
     const [discountData, setDiscountData] = useState ({
         name: '',
         value:'',
-        type: 'percentage',
+        type: '0',
         startDate:'',
         endDate:'',
-        itemId: itemId || ''
+        itemId: itemId || '',
+        is_deleted: '0'
     });
 
     const handleChange = (e) => {

@@ -169,7 +169,7 @@ const UserPage = () => {
     };
 
     const handleSignOut = async () => {
-        localStorage.removeItem('user');
+        localStorage.clear();
         window.location.href = '/';
 
     };
