@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './landing-page.css';
+import NotificationBell from './NotificationBell';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars,
@@ -122,6 +123,7 @@ function Landing() {
         <div className="user-controls">
 
           <div className="user-info">
+            {user.type === 'supplier' && <NotificationBell />}
             <Link to={user.type === 'customer' ? "/user-page" : "/supplier-page"}>
               <button className="user-button">{user.first_name}</button>
             </Link>
