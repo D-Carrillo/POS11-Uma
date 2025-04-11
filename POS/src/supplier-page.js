@@ -15,11 +15,13 @@ const SupplierPage = () => {
     const [error, setError] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [products, setProducts] = useState([]);
+    const [discounts, setDiscounts] = useState([]);
     const [productsLoading, setProductsLoading] = useState(false);
     const [productsError, setProductsError] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedItemId, setSelectedItemId] = useState(null);
+    const [expandedProductId, setExpandedProductId] = useState(null);
     const [tempItemData, setTempItemData] = useState({
     Name: '',
     description: '',
@@ -73,7 +75,24 @@ const SupplierPage = () => {
         fetchSupplierReport();
         fetchUserData();
         fetchSupplierProducts();
+        fetchDiscounts();
     }, [period, user?.id]);
+
+    useEffect(() => {
+        console.log(discounts);
+    }, [discounts]);
+
+    const fetchDiscounts = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/getDiscounts/${user.id}`);
+            setDiscounts(response.data);
+            console.log(discounts);
+            // console.log(discounts);
+
+        }catch (err){
+            console.error('Failed to get discount', err);
+        };
+    }
 
     const fetchSupplierProducts = async () => {
         if (!user?.id) {
@@ -92,7 +111,7 @@ const SupplierPage = () => {
             setProductsError('Failed to fetch products');
         } finally {
             setProductsLoading(false);
-        }
+        };
     };
 
     const fetchUserData = async () => {
@@ -251,9 +270,55 @@ const SupplierPage = () => {
         }
       };
 
-    const handleCreateDiscount = (discountData) => {
-        console.log(discountData)
+    const handleCreateDiscount = async (discountData) => {
+
+        console.log(discountData);
+        try {
+            await axios.put(
+                `http://localhost:5000/api/addDiscount`,
+                discountData, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            );
+
+            alert(`Discount "${discountData.name}" added`);
+        }catch (err) {
+            console.error('Discount failed:', err);
+            alert('Failed to add discount');
+        }
     };
+
+
+    const handleDeleteDiscount = async (discountId) => {
+        try {
+      
+            if (!window.confirm('Are you sure you want to delete this Discount?')) return;
+            await axios.post(
+                `http://localhost:5000/api/deleteDiscount/${discountId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                }   
+                }
+            );
+        
+
+            fetchDiscounts();
+            
+          
+        } catch (err) {
+            console.error('Failed to delete discount:', err);
+            setProducts(prevProducts => 
+                prevProducts.map(product => ({
+                ...product,
+                discounts: product.discounts || []
+            }))
+          );
+        }
+      };
+    
 
     return (
         <div className="user-page">
@@ -475,136 +540,184 @@ const SupplierPage = () => {
                 {productsError && <p className="error">{productsError}</p>}
                 {!productsLoading && !productsError && products.length > 0 ? (
                     <table className="products-table">
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Description</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Modify</th>
-                                <th>Add Discount</th>
-                                <th>Delete </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map((product) => (
-                                <tr key={product.item_id}>
+                    <thead>
+                        <tr>
+                        <th>Item Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Modify</th>
+                        <th>Add Discount</th>
+                        <th>Delete</th>
+                        <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {products.map((product) => {
+                        const isExpanded = expandedProductId === product.item_id;
+                        return (
+                            <React.Fragment key={product.item_id}>
+                            {/* Main Product Row */}
+                            <tr className='main-product-row'>
                                 <td>
-                                    {editingItem === product.item_id ? (
+                                {editingItem === product.item_id ? (
                                     <input
-                                        type="text"
-                                        name="Name"
-                                        value={tempItemData.Name || ''}
-                                        onChange={handleTempChange}
-                                        className="edit-input"
+                                    type="text"
+                                    name="Name"
+                                    value={tempItemData.Name || ''}
+                                    onChange={handleTempChange}
+                                    className="edit-input"
                                     />
-                                    ) : (
+                                ) : (
                                     product.Name
-                                    )}
+                                )}
                                 </td>
                                 <td>
-                                    {editingItem === product.item_id ? (
+                                {editingItem === product.item_id ? (
                                     <input
-                                        type="text"
-                                        name="description"
-                                        value={tempItemData.description || ''}
-                                        onChange={handleTempChange}
-                                        className="edit-input"
+                                    type="text"
+                                    name="description"
+                                    value={tempItemData.description || ''}
+                                    onChange={handleTempChange}
+                                    className="edit-input"
                                     />
-                                    ) : (
+                                ) : (
                                     product.description
-                                    )}
+                                )}
                                 </td>
                                 <td>
-                                    {editingItem === product.item_id ? (
+                                {editingItem === product.item_id ? (
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        name="price"
-                                        value={tempItemData.price || ''}
-                                        onChange={handleTempChange}
-                                        className="edit-input"
+                                    type="number"
+                                    step="0.01"
+                                    name="price"
+                                    value={tempItemData.price || ''}
+                                    onChange={handleTempChange}
+                                    className="edit-input"
                                     />
-                                    ) : (
+                                ) : (
                                     `$${Number(product.price).toFixed(2)}`
-                                    )}
+                                )}
                                 </td>
                                 <td>
-                                    {editingItem === product.item_id ? (
+                                {editingItem === product.item_id ? (
                                     <input
-                                        type="number"
-                                        name="quantity"
-                                        value={tempItemData.quantity || ''}
-                                        onChange={handleTempChange}
-                                        className="edit-input"
+                                    type="number"
+                                    name="quantity"
+                                    value={tempItemData.quantity || ''}
+                                    onChange={handleTempChange}
+                                    className="edit-input"
                                     />
-                                    ) : (
+                                ) : (
                                     product.quantity
-                                    )}
+                                )}
                                 </td>
                                 <td className='action-buttons'>
-                                    {editingItem === product.item_id ? (
+                                {editingItem === product.item_id ? (
                                     <>
-                                        <button 
+                                    <button 
                                         onClick={saveChanges} 
                                         className="save-button"
-                                        >
+                                    >
                                         Save
-                                        </button>
-                                        <button 
+                                    </button>
+                                    <button 
                                         onClick={cancelEditing} 
                                         className="cancel-button"
-                                        >
-                                        Cancel
-                                        </button>
-                                    </>
-                                    ) : (
-                                    <button 
-                                        onClick={() => startEditing(product)} 
-                                        className="modify-button"
                                     >
-                                        Modify
+                                        Cancel
                                     </button>
-                                    )}
-
+                                    </>
+                                ) : (
+                                    <button 
+                                    onClick={() => startEditing(product)} 
+                                    className="modify-button"
+                                    >
+                                    Modify
+                                    </button>
+                                )}
                                 </td>
                                 <td className="action-buttons">
-                                    <button
-                                        onClick = {() => {setSelectedItemId(product.item_id);
-                                            setIsModalOpen(true);
-                                        }}
-                                        className="discount-button"
-                                    >
-                                    Discount
-                                    </button>
-
-                                    <DiscountModal
-                                        isOpen = {isModalOpen}
-                                        onClose = {() => setIsModalOpen(false)}
-                                        onSubmit={handleCreateDiscount}
-                                        itemId={selectedItemId}
-                                    />
+                                <button
+                                    onClick={() => {
+                                    setSelectedItemId(product.item_id);
+                                    setIsModalOpen(true);
+                                    }}
+                                    className="discount-button"
+                                >
+                                    Add Discount
+                                </button>
+                                <DiscountModal
+                                    isOpen={isModalOpen}
+                                    onClose={() => setIsModalOpen(false)}
+                                    onSubmit={handleCreateDiscount}
+                                    itemId={selectedItemId}
+                                />
                                 </td>
-
-                                
-
                                 <td className='action-buttons'>
-                                    <button 
+                                <button 
                                     onClick={() => handleDelete(product.item_id)} 
                                     className="delete-button"
                                     disabled={editingItem === product.item_id} 
-                                    >
+                                >
                                     Delete
-                                    </button>
+                                </button>
                                 </td>
-                                </tr>
-                            ))}
-                            </tbody>
+                                <td>
+                                <button 
+                                    onClick={() => setExpandedProductId(isExpanded ? null : product.item_id)}
+                                    className='toggle-discounts-button'
+                                >
+                                    {isExpanded ? 'Hide Discounts' : 'Show Discounts'}
+                                </button>
+                                </td>
+                            </tr>
+
+                            {/* Discounts Rows */}
+                            {isExpanded && (
+                                <>
+                                {discounts && discounts.length > 0 ? (
+                                    discounts.map(discount => (
+                                    <tr key={`${product.item_id}-${discount.discount_id}`} className='discount-row'>
+                                        <td colSpan="3">
+                                        <strong>{discount.Name}</strong>
+                                        <span className='discount-details'>
+                                            {discount.value}% | {new Date(discount.Start_Date).toLocaleDateString()} to {new Date(discount.End_Date).toLocaleDateString()}
+                                        </span>
+                                        </td>
+                                        <td colSpan="3">
+                                        <div className='discount-type'>
+                                            {discount.type === 0 ? "Percentage" : "Fixed Amount"}
+                                        </div>
+                                        </td>
+                                        <td colSpan="2" className='action-buttons'>
+                                        <button 
+                                            onClick={() => handleDeleteDiscount(discount.discount_id)}
+                                            className='delete-discount-button'
+                                        >
+                                            Delete Discount
+                                        </button>
+                                        </td>
+                                    </tr>
+                                    ))
+                                ) : (
+                                    <tr className='discount-row'>
+                                    <td colSpan="8" className="no-discounts">
+                                        No discounts available
+                                    </td>
+                                    </tr>
+                                )}
+                                </>
+                            )}
+                            </React.Fragment>
+                        );
+                        })}
+                    </tbody>
                     </table>
                 ) : (
                     !productsLoading && <p>No products found.</p>
                 )}
-            </div>
+                </div>
 
             <button className="Add-item-button" onClick={handleItemAdd}>Add Item</button>
 

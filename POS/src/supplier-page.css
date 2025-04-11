@@ -148,3 +148,100 @@
   .delete-button:hover {
     background-color: #d32f2f;
   }
+
+.main-product-row {
+    background-color: #fff;
+    font-weight: bold;
+  }
+
+  .discount-row {
+    background-color: #f8fafc;
+    border-left: 4px solid #8b5cf6; 
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .discount-row:hover {
+    background-color: #f1f5f9;
+  }
+  
+  .discount-row td {
+    padding: 10px 15px;
+    vertical-align: top;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .discount-details {
+    display:flex;
+    color: #64748b;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  
+  .toggle-discounts-button {
+    background: none;
+    border: none;
+    color: #8b5cf6; 
+    cursor: pointer;
+    padding: 5px 10px;
+    font-weight: bold;
+  }
+  
+  .toggle-discounts-button:hover {
+    text-decoration: underline;
+  }
+  
+  
+  .delete-discount-button {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .delete-discount-button {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .delete-discount-button:hover {
+    background-color: #fee2e2;
+  }
+  
+
+  .no-discounts {
+    color: #94a3b8;
+    font-style: italic;
+    padding: 12px 15px;
+    text-align: center;
+    background-color: #f8fafc;
+    border-left: 4px solid #e2e8f0;
+  }
+  
+
+  @keyframes fadeIn {
+    from { 
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
