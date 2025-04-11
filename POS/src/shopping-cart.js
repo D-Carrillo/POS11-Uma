@@ -40,13 +40,6 @@ const ShoppingCart = () => {
       setAppliedCodes(JSON.parse(storedCodes));
     }
   }, [cartItems]);
-  
-  // useEffect(() => {
-  //   const storedCodes = localStorage.getItem("AppliedDiscountCodes");
-  //   if (storedCodes) {
-  //     setAppliedCodes(JSON.parse(storedCodes));
-  //   }
-  // }, []);
 
   useEffect(() => {
     const fetchDiscountDetails = async () => {
@@ -57,7 +50,9 @@ const ShoppingCart = () => {
           )
         );
         const details = responses.map(response => response.data[0]);
-        setDiscountDetails(details.filter(Boolean)); // Remove any undefined values
+        const validDetails = details.filter(Boolean); // Remove any undefined values
+        localStorage.setItem("appliedDiscountDetails", JSON.stringify(validDetails));
+        setDiscountDetails(validDetails);
       } catch (err) {
         console.error("Failed to fetch discount details", err);
       }
@@ -76,28 +71,34 @@ const ShoppingCart = () => {
       setError("Please enter a discount code");
       return;
     }
-
+  
     try {
       const response = await axios.get(`http://localhost:5000/api/getDiscountsByName/${discountCode}`);
-
-      const data = response.data[0];
-      
-
-      if (data){
-        if (appliedCodes.includes(discountCode)) {
-          setError("Disocunt code already applied");
-          return;
-        }
-        const updatedCodes = [...appliedCodes, discountCode];
-        setAppliedCodes(updatedCodes);
-        localStorage.setItem("appliedDiscountCodes", JSON.stringify(updatedCodes));
-        setDiscountCode("");
-        setError("");
-      } else {
-        setError("Invalid discount code");
+      const discountData = response.data[0]; 
+  
+      if (!discountData || 
+          typeof discountData !== 'object' ||
+          !discountData.code || 
+          discountData.value === undefined ||
+          discountData.type === undefined) {
+        setError("Invalid discount code structure");
+        return;
       }
-    }catch (err) {
-      setError("Failed to validate discount code");
+  
+      if (appliedCodes.some(code => code.toLowerCase() === discountCode.toLowerCase())) {
+        setError("Discount code already applied");
+        return;
+      }
+  
+      const updatedCodes = [...appliedCodes, discountData.code]; 
+      setAppliedCodes(updatedCodes);
+      localStorage.setItem("appliedDiscountCodes", JSON.stringify(updatedCodes));
+  
+      setDiscountCode("");
+      setError("");
+      
+    } catch (err) {
+      setError("Invalid or expired discount code");
     }
   };
 
@@ -142,14 +143,14 @@ const ShoppingCart = () => {
     
     cartItems.forEach(item => {
       discountDetails.forEach(discount => {
-        const discountObj = discount[0]
-        console.log(discountObj.Item_ID);
+        if (!discount || !Array.isArray(discount) || !discount[0]) return; 
+        
+        const discountObj = discount[0]; 
         if (discountObj.Item_ID === item.Item_ID) {
-          const discountValue = parseFloat(discountObj.value);
           if (discountObj.type === 0) {
-            totalDiscount += item.price * item.quantity * (discountValue / 100);
+            totalDiscount += item.price * item.quantity * (discountObj.value / 100);
           } else if (discountObj.type === 1) {
-            totalDiscount += discountValue * item.quantity;
+            totalDiscount += discountObj.value * item.quantity;
           }
         }
       });

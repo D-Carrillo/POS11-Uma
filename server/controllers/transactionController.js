@@ -23,12 +23,19 @@ const createTransaction = async (req, res) => {
 const createTransactionItem = async (req, res) => {
     try {
         const { transaction_id, item_id, quantity, subtotal, discount_id, discounted_price } = req.body;
+
+        const discountID = discount_id === null || discount_id === undefined ? null : Number(discount_id);
+
+        // Log the variables to debug
+        console.log("Transaction Details:", {
+            transaction_id, item_id, quantity, subtotal, discountID, discounted_price
+        });
         
         await db.promise().query(
           `INSERT INTO transaction_item 
            (Transaction_ID, Item_ID, Quantity, Subtotal, Discount_ID, Discounted_Price)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [transaction_id, item_id, quantity, subtotal, discount_id, discounted_price]
+          [Number(transaction_id), Number(item_id), Number(quantity), parseFloat(subtotal), discountID, parseFloat(discounted_price)]
         );
     
         res.status(201).json({ success: true });

@@ -9,6 +9,8 @@ import './checkout.css';
 const Checkout = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const [cart, setCart] = useState(null);
+  const [discounts, setDiscounts] = useState(null);
+  const [discountDetails, setDiscountDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,6 +25,14 @@ const Checkout = () => {
   useEffect(() => {
     try {
       const savedCart = JSON.parse(localStorage.getItem('checkoutCart'));
+      const savedDiscounts = JSON.parse(localStorage.getItem('appliedDiscountCodes'));
+      const storedDiscountDetails = localStorage.getItem('appliedDiscountDetails');
+      if (storedDiscountDetails) {
+        setDiscountDetails(JSON.parse(storedDiscountDetails));
+      }
+      console.log('Loaded discounts:', savedDiscounts);
+      console.log(savedCart);
+      console.log('this', discountDetails);
       if (!savedCart || !savedCart.items || savedCart.items.length === 0) {
         window.location.href = '/shopping-cart';
         return;
@@ -31,6 +41,7 @@ const Checkout = () => {
         throw new Error('Invalid cart totals');
       }
       setCart(savedCart);
+      setDiscounts(savedDiscounts || []);
       setLoading(false);
     } catch (err) {
       console.error('Failed to load cart:', err);
@@ -38,6 +49,10 @@ const Checkout = () => {
       window.location.href = '/shopping-cart';
     }
   }, []);
+
+  useEffect(() => {
+    console.log("this", discountDetails)
+  }, [discountDetails]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -106,7 +121,8 @@ const Checkout = () => {
         payment_method: 'Online',
         total_items: cart.items.reduce((sum, item) => sum + item.quantity, 0),
         transaction_status: 1, // 1 means completed
-        total_discount: 0.00 
+        total_discount: (parseFloat(cart.totals.subtotal) + parseFloat(cart.totals.tax) - parseFloat(cart.totals.total)).toFixed(2)
+
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -116,33 +132,60 @@ const Checkout = () => {
       const transactionId = transactionResponse.data.transactionId;
   
       //Create a transaction item record
+      const flatDiscountDetails = discountDetails?.flat() || [];
+
       await Promise.all(cart.items.map(async (item) => {
+        const matchingDiscount = flatDiscountDetails.find(
+          discount => discount.Item_ID === item.Item_ID
+        );
+      
+        const price = parseFloat(item.price);
+        const originalSubtotal = price * item.quantity;
+        let discountValue = 0;
+      
+        if (matchingDiscount) {
+          const rawValue = parseFloat(matchingDiscount.value);
+          const discountType = matchingDiscount.type;
+      
+          if (discountType === 0) {
+            // Percentage discount
+            discountValue = (rawValue / 100) * originalSubtotal;
+          } else if (discountType === 1) {
+            // Fixed discount
+            discountValue = rawValue;
+          }
+        }
+      
+        const finalPrice = originalSubtotal - discountValue;
+      
         await axios.post('http://localhost:5000/api/transaction-item', {
           transaction_id: transactionId,
           item_id: item.Item_ID,
           quantity: item.quantity,
-          subtotal: item.price * item.quantity,
-          discount_id: null, 
-          discounted_price: item.price * item.quantity 
+          subtotal: originalSubtotal,
+          discount_id: matchingDiscount ? matchingDiscount.Discount_ID : null,
+          discounted_price: finalPrice
         }, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-  
+      
         // reduce item stock
         await axios.put(`http://localhost:5000/api/items/stock/${item.Item_ID}`, {
-          quantity: item.quantity // reducing stock by 1
+          quantity: item.quantity
         }, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
       }));
+      
   
       alert('Payment successful! Your order has been placed.');
       localStorage.removeItem('checkoutCart');
       localStorage.removeItem('cart');
+      localStorage.removeItem('appliedDiscountDetails');
       window.location.href = '/';
     } catch (error) {
       console.error('Checkout failed:', error);
@@ -194,6 +237,30 @@ const Checkout = () => {
             <span>Subtotal</span>
             <span id="subtotal">${cart.totals.subtotal}</span>
             </div>
+            {discounts && discounts.length > 0 && (
+              <div className='summary-row discount-row'>
+              <span>Discounts</span>
+              <span id = "discount">
+              -${(
+                  parseFloat(cart.totals.subtotal) + 
+                  parseFloat(cart.totals.tax) - 
+                  parseFloat(cart.totals.total)
+                ).toFixed(2)}
+              </span>
+            </div>)}
+            {discounts && discounts.length > 0 && (
+              <div className="applied-discounts">
+                <small>Applied Discount Codes:</small>
+                <ul>
+                  {discounts.map((code, idx) => (
+                    <li key={idx}>
+                      <small>{code}</small>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="summary-row">
             <span>Tax (8%)</span>
             <span id="tax">${cart.totals.tax}</span>
