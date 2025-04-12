@@ -43,61 +43,87 @@ const createTransactionItem = async (req, res) => {
         res.status(500).json({ error: 'Transaction item creation failed' });
       }
 };
-
 const getUserTransactions = async (req, res) => {
-    try {
-        
-        const [transactions] = await db.promise().query(`
-            SELECT * from transaction
-            WHERE Customer_ID = ?
-            Order BY sale_time DESC`
-            ,
-            [req.params.userId]
-        );
+  try {
+      const [transactions] = await db.promise().query(`
+          SELECT * from transaction
+          WHERE Customer_ID = ?
+          Order BY sale_time DESC
+      `, [req.params.userId]);
 
-        let items = [];
-        if (transactions.length > 0) {
-            const transactionIds = transactions.map(t => t.Transaction_ID);
-            const placeholders = transactionIds.map(() => '?').join(',');
-        
-            const [itemsResults] = await db.promise().query(`
-                SELECT 
-                ti.Transaction_ID,
-                ti.Item_ID,
-                ti.Quantity,
-                ti.Subtotal,
-                ti.Discounted_Price,
-                i.Name AS item_name,
-                i.description AS item_description,
-                i.Price AS item_price
-                FROM transaction_item ti
-                JOIN item i ON ti.Item_ID = i.Item_ID
-                WHERE ti.Transaction_ID IN (${placeholders})
-                ORDER BY ti.Transaction_ID DESC
-            `, transactionIds);
-            
-            items = itemsResults;
-        }
+      let items = [];
+      if (transactions.length > 0) {
+          const transactionIds = transactions.map(t => t.Transaction_ID);
+          const placeholders = transactionIds.map(() => '?').join(',');
 
-        res.json({
-            success: true,
-            transactions: transactions,
-            items: items
-        });
+          const [itemsResults] = await db.promise().query(`
+              SELECT 
+                  ti.Transaction_ID,
+                  ti.Item_ID,
+                  ti.Quantity,
+                  ti.Subtotal,
+                  ti.Discounted_Price,
+                  i.Name AS item_name,
+                  i.description AS item_description,
+                  i.Price AS item_price
+              FROM transaction_item ti
+              JOIN item i ON ti.Item_ID = i.Item_ID
+              WHERE ti.Transaction_ID IN (${placeholders})
+              ORDER BY ti.Transaction_ID DESC
+          `, transactionIds);
 
-    }catch (err) {
-        console.error('Database error:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to fetch transactions',
-            details: {
-                message: err.message,
-                sql: err.sql,
-                stack: err.stack
-            }
-        });
-    }
+          items = itemsResults;
+      }
+
+      let transactionItems = [];
+      if (transactions.length > 0) {
+          const transactionIds = transactions.map(t => t.Transaction_ID);
+          const placeholders = transactionIds.map(() => '?').join(',');
+
+          const [transactionItemsResults] = await db.promise().query(`
+              SELECT 
+                  ti.TransactionItem_id,
+                  ti.Transaction_ID,
+                  ti.Item_ID,
+                  ti.Quantity,
+                  ti.Subtotal,
+                  ti.Discount_ID,
+                  ti.Discounted_Price,
+                  i.Name AS item_name,
+                  i.Description AS item_description,
+                  i.Price AS item_price
+              FROM transaction_item ti
+              JOIN item i ON ti.Item_ID = i.Item_ID
+              WHERE ti.Transaction_ID IN (${placeholders})
+              ORDER BY ti.Transaction_ID DESC
+          `, transactionIds);
+
+          transactionItems = transactionItemsResults;
+      }
+
+      console.log(transactionItems);
+
+      res.json({
+          success: true,
+          transactions: transactions,
+          items: items,
+          transactionItems: transactionItems
+      });
+  } catch (err) {
+      console.error('Database error:', err);
+      res.status(500).json({ 
+          success: false,
+          error: 'Failed to fetch transactions',
+          details: {
+              message: err.message,
+              sql: err.sql,
+              stack: err.stack
+          }
+      });
+  }
 };
+
+
 
 const returnItem = async (req, res) => {
   const { transaction_id, item_id, return_reason } = req.body;

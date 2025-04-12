@@ -21,11 +21,12 @@
     position: relative;
   }
   
-   .close-button {
+   .close-button-modal {
     position: absolute;
     top: 10px;
     right: 10px;
     background: none;
+    color: black;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;

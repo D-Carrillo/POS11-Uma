@@ -59,6 +59,17 @@
     color: #444;
 }
 
+.original-price {
+    text-decoration: line-through;
+    color: gray;
+    margin-right: 5px;
+}
+
+.discounted-price {
+    color: red;
+    font-weight: bold;
+}
+
 
 .form-group input,
 .form-group select {
@@ -214,7 +225,7 @@
 .toggle-items-button {
     background: none;
     border: none;
-    color: #3498db;
+    color: #2962ff;
     cursor: pointer;
     padding: 5px 10px;
     font-weight: bold;
@@ -242,7 +253,7 @@
 .item-row {
     background-color: #f8fafc;
     transition: all 0.2s ease;
-    border-left: 4px solid #3498db; 
+    border-left: 4px solid #2962ff; 
   }
   
   .item-row:hover {
