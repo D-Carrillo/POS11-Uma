@@ -9,7 +9,7 @@ const db = mysql.createConnection({
   port: 3306,
 });
 
-// handle connection errors gracefully
+
 db.connect(err => {
   if (err) {
     console.error('Error connecting to MySQL:', err.stack);
@@ -21,7 +21,6 @@ db.connect(err => {
 db.on('error', err => {
   console.error('MySQL connection error:', err);
   if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-    // handle reconnection logic here
   }
 });
 
