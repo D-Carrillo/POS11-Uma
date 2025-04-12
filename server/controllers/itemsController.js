@@ -123,12 +123,28 @@ const updateStock = async (req, res) => {
         res.status(500).json({ error: 'Stock update failed' });
       }
 };
+
+const searchItems = async (req, res) => {
+    const { query } = req.query;
+
+    try {
+        const [results] = await db.promise().query(
+            `SELECT Name, Price, description, stock_quantity, image_url FROM item WHERE Name LIKE ?`,
+            [`%${query}%`]
+        );
+        res.status(200).json(results);
+    } catch (err) {
+        console.error('Search error:', err);
+        res.status(500).json({ error: 'Failed to search items' });
+    }
+};
 module.exports = {
     getAllItems,
     itemEntry,
     getSupplierItems,
     itemdelete,
     modify,
-    updateStock
+    updateStock,
+    searchItems,
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './landing-page.css';
 import NotificationBell from './NotificationBell';
@@ -29,6 +29,7 @@ function Landing() {
   const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('default');
   const [displayProducts, setDisplayProducts] = useState(products);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -46,7 +47,24 @@ function Landing() {
     fetchProducts();
   }, []);
 
-  const getSortedProducts = () => {
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/items/search?query=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Failed to fetch search results');
+      const data = await response.json();
+      console.log('Search results:', data);
+      setProducts(data);
+      setDisplayProducts(data); // Update the displayed products
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const getSortedProducts = useCallback(() => {
     //const productsToSort = [...products];
     const productsToSort = products.slice();
 
@@ -69,12 +87,12 @@ function Landing() {
 
     console.log(sortedProducts);
     return sortedProducts;
-  };
+  }, [products, sortOption, activeCategory]);
 
-  const sortProducts = () => {
+  const sortProducts = useCallback(() => {
     const sorted = getSortedProducts();
     setDisplayProducts(sorted);
-  }
+  }, [getSortedProducts]);
 
   useEffect(() => {
     sortProducts();
@@ -115,9 +133,12 @@ function Landing() {
         }
       } else {
         existingCart.push({ 
-          ...product, 
+          Item_ID: product.Item_ID,
+          Name: product.Name,
+          price: product.price || product.Price,
+          image_url: product.image_url,
           quantity: 1,
-          maxQuantity: product.stock_quantity || 99 
+          stock_quantity: product.stock_quantity || 99,
         });
       }
   
@@ -141,8 +162,10 @@ function Landing() {
         </div>
         <div className="search-container">
           <div className="search-bar">
-            <input type="text" className="search-input" placeholder="Search products..." />
-            <button className="search-button">
+            <input type="text" className="search-input" placeholder="Search products..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { handleSearch(); } }} />
+            <button className="search-button" onClick={() => handleSearch()}>
               <FontAwesomeIcon icon="search" />
               <span>Search</span>
             </button>
@@ -248,7 +271,7 @@ function Landing() {
                   </div>
                   <div className="product-details">
                     <div className="product-title">{product.Name}</div>
-                    <div className="product-price">${product.price}</div>
+                    <div className="product-price">${product.price || product.Price}</div>
                     <div className="description">{product.description}</div>
                     <div className="product-inventory">In stock: {product.stock_quantity}</div>
                     {!user && (
