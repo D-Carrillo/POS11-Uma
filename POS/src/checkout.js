@@ -185,6 +185,7 @@ const Checkout = () => {
       alert('Payment successful! Your order has been placed.');
       localStorage.removeItem('checkoutCart');
       localStorage.removeItem('cart');
+      localStorage.removeItem('appliedDiscountCodes');
       localStorage.removeItem('appliedDiscountDetails');
       window.location.href = '/';
     } catch (error) {

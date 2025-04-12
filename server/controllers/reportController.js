@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const { subDays } = require('date-fns');
+
 
 exports.getCustomerReports = async (req, res) => {
     const { period, customerId } = req.params;
@@ -62,7 +64,7 @@ exports.getCustomerReports = async (req, res) => {
 
 exports.getSupplierReport = async (req, res) => {
     const { supplierId } = req.params;
-    const { period, itemId } = req.query; // Added itemId here
+    const { period, itemId } = req.query;
 
     if (!supplierId) {
         return res.status(400).json({ error: 'Supplier ID is required' });
@@ -116,6 +118,131 @@ exports.getSupplierReport = async (req, res) => {
     try {
         const [results] = await db.query(query, queryParams);
         res.json(results);
+    } catch (err) {
+        console.error('Supplier report error:', err);
+        res.status(500).json({ error: 'Failed to generate supplier report', details: err.message });
+    }
+};
+
+
+exports.getSpendingReport = async (req, res) => {
+    const { userID } = req.params;
+    const { period, startDate, endDate } = req.query;
+
+    console.log("thisistheback", { userID, period, startDate, endDate });
+
+    const now = new Date();
+    let dateFilter = {};
+
+    if (period === 'custom' && startDate && endDate) {
+        dateFilter = {
+            gte: new Date(`${startDate}T00:00:00.000Z`),
+            lte: new Date(`${endDate}T23:59:59.999Z`)
+        };
+    } else if (period === 'day') {
+        const startOfDay = new Date(now);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(now);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        dateFilter = {
+            gte: startOfDay,
+            lte: endOfDay
+        };
+    } else if (period === 'week') {
+        const startOfWeek = subDays(now, 6);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        dateFilter = {
+            gte: startOfWeek,
+            lte: now
+        };
+    } else if (period === 'month') {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        dateFilter = {
+            gte: startOfMonth,
+            lte: now
+        };
+    } else if (period === 'year') {
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        dateFilter = {
+            gte: startOfYear,
+            lte: now
+        };
+    } else {
+        // Fallback (last 30 days)
+        dateFilter = {
+            gte: subDays(now, 30),
+            lte: now
+        };
+    }
+
+
+    try {
+        const [trend] = await db.promise().query(
+            `SELECT 
+                ANY_VALUE(CASE 
+                    WHEN ? = 'day' THEN DATE_FORMAT(t.sale_time, '%H:00')
+                    WHEN ? = 'week' THEN DATE_FORMAT(t.sale_time, '%Y-%m-%d')
+                    WHEN ? = 'month' THEN DATE_FORMAT(t.sale_time, '%Y-%m')
+                    WHEN ? = 'year' THEN DATE_FORMAT(t.sale_time, '%Y')
+                    ELSE DATE_FORMAT(t.sale_time, '%Y-%m-%d')
+                END) AS period,
+                COUNT(t.Transaction_ID) AS transaction_count,
+                SUM(COALESCE(t.Total_cost, 0)) AS total_spent,
+                SUM(COALESCE(t.Total_items, 0)) AS total_items_sold,
+                AVG(COALESCE(t.Total_cost, 0)) AS average_order_value
+            FROM transaction t
+            WHERE t.Customer_ID = ?
+            AND t.sale_time BETWEEN ? AND ?
+            AND t.Transaction_Status = 1
+            GROUP BY 
+                CASE 
+                    WHEN ? = 'day' THEN DATE_FORMAT(t.sale_time, '%H')
+                    WHEN ? = 'week' THEN DATE_FORMAT(t.sale_time, '%Y-%m-%d')
+                    WHEN ? = 'month' THEN DATE_FORMAT(t.sale_time, '%Y-%m')
+                    WHEN ? = 'year' THEN DATE_FORMAT(t.sale_time, '%Y')
+                    ELSE DATE_FORMAT(t.sale_time, '%Y-%m-%d')
+                END
+            ORDER BY period`,
+            [ period, period, period, period, userID, dateFilter.gte, dateFilter.lte, period, period, period, period ] );
+
+        const [categories] = await db.promise().query(`
+            SELECT 
+                c.Category_Name AS category_name,
+                SUM(COALESCE(t.Total_cost, 0)) AS total_spent
+            FROM transaction t
+            JOIN transaction_item ti ON t.Transaction_ID = ti.Transaction_ID
+            JOIN item i ON ti.Item_ID = i.Item_ID
+            JOIN category c ON i.Category_ID = c.Category_ID
+            WHERE t.Customer_ID = ?
+            AND t.Transaction_Status = 1
+            AND t.sale_time BETWEEN ? AND ?
+            GROUP BY c.Category_Name
+        `, [userID, dateFilter.gte, dateFilter.lte]);
+
+        // for the trend data
+        const total_spent = trend.reduce((sum, row) => sum + parseFloat(row.total_spent || 0), 0);
+        const total_items = trend.reduce((sum, row) => sum + parseInt(row.total_items_sold || 0), 0);
+        const transaction_count = trend.reduce((sum, row) => sum + parseInt(row.transaction_count || 0), 0);
+        const average_order_value = transaction_count > 0 ? total_spent / transaction_count : 0;
+
+        console.log({
+            total_spent,
+            total_items,
+            transaction_count,
+            average_order_value,
+        });
+
+        res.json({
+            total_spent,
+            total_items,
+            transaction_count,
+            average_order_value,
+            spending_trend: trend,
+            category_breakdown: categories,
+        });
     } catch (err) {
         console.error('Supplier report error:', err);
         res.status(500).json({ error: 'Failed to generate supplier report', details: err.message });
