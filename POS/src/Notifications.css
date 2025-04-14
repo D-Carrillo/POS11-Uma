@@ -127,3 +127,22 @@
 .mark-all-read:hover {
   color: rgba(255, 255, 255, 0.8);
 }
+
+.notification-actions button {
+  background-color: #007bff; 
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.notification-actions button:nth-child(1):hover {
+  background-color: #0b5ce7; 
+}
+
+.notification-actions button:nth-child(2):hover {
+  background-color: #dc3545; 
+}

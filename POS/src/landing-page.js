@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './landing-page.css';
 import NotificationBell from './NotificationBell';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faBars,
+  faExpand,
   faShoppingCart,
   faHome,
   faTag,
@@ -24,6 +26,7 @@ function Landing() {
   const [error, setError] = useState(null);
   const [sortOption, setSortOption] = useState('default');
   const [displayProducts, setDisplayProducts] = useState(products);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -41,7 +44,47 @@ function Landing() {
     fetchProducts();
   }, []);
 
-  const getSortedProducts = () => {
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/items/search?query=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) throw new Error('Failed to fetch search results');
+      const data = await response.json();
+  
+
+      const filteredResults = data.filter(product => 
+        activeCategory === 'All Products' || product.Category_name === activeCategory
+      );
+  
+      setProducts(data); 
+      setDisplayProducts(filteredResults); 
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearSearch = async () => {
+    setSearchQuery('');
+    try {
+      const response = await fetch('http://localhost:5000/api/items');
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      setProducts(data);
+      
+      // Filter by active category
+      const filteredResults = data.filter(product => 
+        activeCategory === 'All Products' || product.Category_name === activeCategory
+      );
+      setDisplayProducts(filteredResults);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+
+  const getSortedProducts = useCallback(() => {
     const productsToSort = products.slice();
 
     let sortedProducts = [];
@@ -61,19 +104,33 @@ function Landing() {
       sortedProducts = sortedProducts.filter(product => product.Category_name === activeCategory);
     }
 
+    console.log(sortedProducts);
     return sortedProducts;
-  };
+  }, [products, sortOption, activeCategory]);
 
-  const sortProducts = () => {
+  const sortProducts = useCallback(() => {
     const sorted = getSortedProducts();
     setDisplayProducts(sorted);
-  }
+  }, [getSortedProducts]);
 
   useEffect(() => {
     sortProducts();
-  }, [sortOption, products, activeCategory]);
+  }, [sortOption, products, activeCategory, sortProducts]);
 
-  const handleCategoryClick = (category) => setActiveCategory(category);
+
+  const handleCategoryClick = (category) => {
+    setActiveCategory(category);
+  
+    // Filter products based on the selected category and search query
+    const filteredProducts = products.filter(product => {
+      const matchesCategory = category === 'All Products' || product.Category_name === category;
+      const matchesSearch = product.Name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  
+    setDisplayProducts(filteredProducts);
+  };
+
   const handleMenuItemClick = (menuItem) => setActiveMenuItem(menuItem);
   const handleProductClick = (product) => {
     if (!user) {
@@ -92,7 +149,9 @@ function Landing() {
     if (shouldAdd) {
       const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
       
-      const existingProductIndex = existingCart.findIndex(item => item.Item_ID === product.Item_ID);
+      const existingProductIndex = existingCart.findIndex(item => 
+        item.Item_ID === product.Item_ID && item.Name === product.Name
+      );
   
       if (existingProductIndex >= 0) {
         if (existingCart[existingProductIndex].quantity < (product.maxQuantity || 99)) {
@@ -103,9 +162,12 @@ function Landing() {
         }
       } else {
         existingCart.push({ 
-          ...product, 
+          Item_ID: product.Item_ID,
+          Name: product.Name,
+          price: product.price || product.Price,
+          image_url: product.image_url,
           quantity: 1,
-          maxQuantity: product.stock_quantity || 99 
+          stock_quantity: product.stock_quantity || 99,
         });
       }
   
@@ -126,11 +188,19 @@ function Landing() {
         </div>
         <div className="search-container">
           <div className="search-bar">
-            <input type="text" className="search-input" placeholder="Search products..." />
-            <button className="search-button">
+            <input type="text" className="search-input" placeholder="Search products..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { handleSearch(); } }} />
+            <button className="search-button" onClick={() => handleSearch()}>
               <FontAwesomeIcon icon="search" />
               <span>Search</span>
             </button>
+            {searchQuery && (
+              <button className="clear-button" onClick={clearSearch}>
+                <FontAwesomeIcon icon="times" />
+                <span>Clear</span>
+              </button>
+            )}
           </div>
         </div>
         <div className="user-controls">
@@ -160,7 +230,6 @@ function Landing() {
           </div>
         </div>
       </div>
-
       <div className="categories-bar">
         {['All Products', 'Electronics', 'Clothing', 'Home & Kitchen', 'Toys', 'Sporting Goods', 'Business & Industrial', 'Jewelry & Watches', 'Refurbished'].map((category) => (
           <div
@@ -174,8 +243,10 @@ function Landing() {
       </div>
 
       <div className="main-area">
+
+
         <div className="main-content-wrapper">
-          <main className="main-content full-width">
+          <main className="main-content">
             <div className="filter-options">
               <div className="filter-label">Sort by:</div>
               <select className="filter-select"
@@ -185,6 +256,8 @@ function Landing() {
                 <option value="default">Select</option>
                 <option value="lowToHigh">Price: Low to High</option>
                 <option value="highToLow">Price: High to Low</option>
+                {/*<option>Best Selling</option>
+                <option>Newest First</option>*/}
               </select>
               {/* <div className="filter-label">In Stock:</div>
               <select className="filter-select">
@@ -206,11 +279,11 @@ function Landing() {
                   </div>
                   <div className="product-details">
                     <div className="product-title">{product.Name}</div>
-                    <div className="product-price">${product.price}</div>
+                    <div className="product-price">${product.price || product.Price}</div>
                     <div className="description">{product.description}</div>
                     <div className="product-inventory">In stock: {product.stock_quantity}</div>
                     {!user && (
-                      <div className='login-prompt'><a href="/login">Log in to purchase</a></div>
+                      <div className='loging-promt'> <a href="/login">Log in to purchase</a> </div>
                     )}
                   </div>
                 </div>

@@ -136,7 +136,7 @@ const ShoppingCart = () => {
   const updateQuantity = (Item_ID, newQuantity) => {
     setCartItems(cartItems.map(item => 
       item.Item_ID === Item_ID ? { ...item, quantity:
-         Math.max(1, Math.min(item.maxQuantity, newQuantity || 99, newQuantity)) 
+         Math.max(1, Math.min(item.stock_quantity, newQuantity || 99, newQuantity || 1)) 
         } : item
     ));
   };
@@ -269,7 +269,7 @@ const ShoppingCart = () => {
                         <div className="item-name">{item.Name}</div>
                         {/* <div className="item-sku">SKU: {item.sku}</div> */}
                     </div>
-                    <div className="item-price">${Number(item.price).toFixed(2)}</div>
+                    <div className="item-price">${Number(item.price || item.Price).toFixed(2)}</div>
                     <div className="item-quantity">
                         <button 
                         className="quantity-btn decrease" 
@@ -291,7 +291,7 @@ const ShoppingCart = () => {
                         <FontAwesomeIcon icon={faPlus} />
                         </button>
                     </div>
-                    <div className="item-total">${Number(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="item-total">${Number(item.price || item.Price * item.quantity).toFixed(2)}</div>
                     <div className="item-actions">
                         <button className="remove-item" onClick={() => removeItem(item.Item_ID)}>
                         <FontAwesomeIcon icon={faTimes} />
