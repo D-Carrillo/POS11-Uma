@@ -10,7 +10,7 @@ const itemsRoutes = require('./routes/itemsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const discountRoutes = require('./routes/discountRoutes');
-require('./config/db'); // Initialize DB connection
+require('./config/db'); 
 
 const app = express();
 

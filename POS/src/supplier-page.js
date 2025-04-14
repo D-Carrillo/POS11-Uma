@@ -795,40 +795,6 @@ const SupplierPage = () => {
                             )}
                             <button className="Add-item-button" onClick={handleItemAdd}>Add Item</button>
                         </div>
-
-                        <div className="period-selector">
-                            <label htmlFor="period">Select Period:</label>
-                            <select id="period" value={period} onChange={handlePeriodChange}>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="yearly">Yearly</option>
-                            </select>
-                        </div>
-
-                        {loading && <p>Loading...</p>}
-                        {error && <p>{error}</p>}
-                        {!loading && !error && reportData.length > 0 && (
-                            <table className="report-table">
-                                <thead>
-                                    <tr>
-                                        <th>Item Name</th>
-                                        <th>Times Sold</th>
-                                        <th>Total Quantity</th>
-                                        <th>Total Revenue</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {reportData.map((item, index) => (
-                                        <tr key={index}>
-                                            <td>{item.item_name}</td>
-                                            <td>{item.times_sold}</td>
-                                            <td>{item.total_quantity}</td>
-                                            <td>${item.total_revenue.toFixed(2)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
                     </>
                 );
         }
