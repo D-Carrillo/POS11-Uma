@@ -8,7 +8,7 @@ const DiscountModal = ({ isOpen, onClose, onSubmit, itemId}) => {
         type: '0',
         startDate:'',
         endDate:'',
-        itemId: itemId || '',
+        itemId: itemId,
         is_deleted: '0'
     });
 
@@ -28,7 +28,7 @@ const DiscountModal = ({ isOpen, onClose, onSubmit, itemId}) => {
     return (
         <div className='discount-modal-overlay'>
             <div className='discount-modal'>
-                <button className='close-button' onClick={onClose}>x</button>
+                <button className='close-button-modal' onClick={onClose}>x</button>
                 <h3>Create Discount</h3>
                 <form onSubmit={handleSubmit}>
                     <div className = "form-group">

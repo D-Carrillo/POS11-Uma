@@ -35,6 +35,8 @@ const markNotificationAsRead = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   getSupplierNotifications,
   markNotificationAsRead

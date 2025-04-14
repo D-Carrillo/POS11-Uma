@@ -53,13 +53,36 @@ function Landing() {
       const response = await fetch(`http://localhost:5000/api/items/search?query=${encodeURIComponent(searchQuery)}`);
       if (!response.ok) throw new Error('Failed to fetch search results');
       const data = await response.json();
-      console.log('Search results:', data);
-      setProducts(data);
-      setDisplayProducts(data); // Update the displayed products
+  
+      // Filter search results by the active category
+      const filteredResults = data.filter(product => 
+        activeCategory === 'All Products' || product.Category_name === activeCategory
+      );
+  
+      setProducts(data); // Update the full product list
+      setDisplayProducts(filteredResults); // Update the displayed products
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearSearch = async () => {
+    setSearchQuery('');
+    try {
+      const response = await fetch('http://localhost:5000/api/items');
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      setProducts(data);
+      
+      // Filter by active category
+      const filteredResults = data.filter(product => 
+        activeCategory === 'All Products' || product.Category_name === activeCategory
+      );
+      setDisplayProducts(filteredResults);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -103,7 +126,19 @@ function Landing() {
   }, [sidebarCollapsed]);
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
-  const handleCategoryClick = (category) => setActiveCategory(category);
+  const handleCategoryClick = (category) => {
+    setActiveCategory(category);
+  
+    // Filter products based on the selected category and search query
+    const filteredProducts = products.filter(product => {
+      const matchesCategory = category === 'All Products' || product.Category_name === category;
+      const matchesSearch = product.Name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  
+    setDisplayProducts(filteredProducts);
+  };
+
   const handleMenuItemClick = (menuItem) => setActiveMenuItem(menuItem);
   const handleProductClick = (product) => {
     if (!user) {
@@ -122,7 +157,9 @@ function Landing() {
     if (shouldAdd) {
       const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
       
-      const existingProductIndex = existingCart.findIndex(item => item.Item_ID === product.Item_ID);
+      const existingProductIndex = existingCart.findIndex(item => 
+        item.Item_ID === product.Item_ID && item.Name === product.Name
+      );
   
       if (existingProductIndex >= 0) {
         if (existingCart[existingProductIndex].quantity < (product.maxQuantity || 99)) {
@@ -169,6 +206,12 @@ function Landing() {
               <FontAwesomeIcon icon="search" />
               <span>Search</span>
             </button>
+            {searchQuery && (
+              <button className="clear-button" onClick={clearSearch}>
+                <FontAwesomeIcon icon="times" />
+                <span>Clear</span>
+              </button>
+            )}
           </div>
         </div>
         <div className="user-controls">

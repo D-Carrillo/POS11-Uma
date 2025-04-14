@@ -1,14 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
-import {Bar} from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
 import { Chart, registerables } from 'chart.js';
 import './user-page.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import reportTabs from './reportTabs';
 import {
   faShoppingCart,
 
 } from '@fortawesome/free-solid-svg-icons';
+import ReportTabs from './reportTabs';
 
 Chart.register(...registerables);
 
@@ -23,6 +24,8 @@ const UserPage = () => {
     const [items, setItems] = useState([]);
     const [error, setError] = useState(null);
     const [editMode, setEditMode] = useState(false);
+    const [transactionItems, setTransactionItems] = useState([]);
+    const [transactionTab, setTransactionTab] = useState(false);
     const [userData, setUserData] = useState({
         first_name: '',
         middle_Initial: '',
@@ -39,12 +42,12 @@ const UserPage = () => {
         DOB: '',
         Payment_method: 'Card'
     });
-    console.log('USER OBJECT:', user); 
 
     useEffect(() => { 
             fetchCustomerReports();
             fetchUserData();
             fetchTransactions();
+            console.log("thisthisthis",transactionItems);
         }
     , [period, user?.id]);
 
@@ -88,9 +91,10 @@ const UserPage = () => {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
+            console.log(response.data);
             setTransactions(response.data?.transactions || []);
             setItems(response.data?.items || []);
-            console.log('This',response.data?.items);
+            setTransactionItems(response.data?.transactionItems || []);
         }catch (err) {
             console.error('Failed to fetch transactions:', err);
             setTransactions([]);
@@ -115,9 +119,11 @@ const UserPage = () => {
         }
     };
 
-    const getItemsForTransaction = (transactionID) => {
-        return (items || []).filter(item => item.Transaction_ID === transactionID);
+    const getItemsForTransaction = (transactionId) => {
+        return transactionItems.filter(item => item.Transaction_ID === Number(transactionId));
+        
     };
+    
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -415,7 +421,7 @@ const UserPage = () => {
                                 <p><strong>Name:</strong> {userData.first_name} {userData.middle_Initial && `${userData.middle_Initial}. `}{userData.last_Name}</p>
                                 <p><strong>Email:</strong> {userData.Email}</p>
                                 <p><strong>Phone:</strong> {userData.Phone_Number}</p>
-                                <p><strong>DOB:</strong> {userData.DOB || 'Not specified'}</p>
+                                <p><strong>Date of Birth:</strong> {userData.DOB?.split('T')[0] || 'Not specified'}</p>
                                 <p><strong>Payment Method:</strong> {userData.Payment_method}</p>
                             </div>
 
@@ -498,7 +504,12 @@ const UserPage = () => {
                                                     <td>
                                                         {item.Quantity} × ${item.item_price}
                                                     </td>
-                                                    <td>${item.Subtotal}</td>
+                                                    <td>
+                                                        {item.Discount_ID !== null ? (
+                                                        <>
+                                                        <span className='original-price'>${item.Subtotal}</span>
+                                                        <span className='discounted-price'>${item.Discounted_Price}</span>
+                                                    </>) : (`$${item.Subtotal}`)}</td>
                                                     <td>
                                                         {transaction.Transaction_Status === 1 && (
                                                             <button 
@@ -519,64 +530,9 @@ const UserPage = () => {
                         </tbody>
                     </table>
                 </div>
-
-                <div className='period-selector'>
-                    <button onClick = {() => setPeriod('weekly')} className= {period === 'weekly' ? 'active':''}>
-                        Weekly 
-                    </button>
-                    <button onClick = {() => setPeriod('monthly')} className= {period === 'monthly' ? 'active':''}>
-                        Monthly
-                    </button>
-                    <button onClick = {() => setPeriod('yearly')} className= {period === 'yearly' ? 'active':''}>
-                        Yearly
-                    </button>
-                </div>
             </div>
 
-            {loading && <p>Loading your reports...</p>}
-            {error && <p className='error'>{error}</p>}
-
-            {!loading && !error && (
-                <div className='report-content'>
-                    <div className='chart-container'>
-                        <Bar 
-                            data = {chartData}
-                            options = {{
-                                responsive: true,
-                                plugins: {
-                                    title: {
-                                        display: true, 
-                                        text: `Your ${period} spending`
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
-
-                    <table className='report-table'>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Transactions</th>
-                                <th>Total Spent</th>
-                                <th>Items</th>
-                                <th>Avg. Order</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {reportData.map((report, index) => (
-                                <tr key = {index}>
-                                    <td>{report.period}</td>
-                                    <td>{report.transaction_count}</td>
-                                    <td>${Number(report.total_spent).toFixed(2)}</td>
-                                    <td>{report.total_items}</td>
-                                    <td>${Number(report.average_order_value).toFixed(2)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            <ReportTabs user = {user}/>
 
             <button onClick = {handleSignOut} className='signout-button'>Sign Out</button>
             <button onClick={handleDeleteAccount} className="signout-button">

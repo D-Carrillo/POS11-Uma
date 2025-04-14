@@ -35,11 +35,24 @@ const ShoppingCart = () => {
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
-    const storedCodes = localStorage.getItem("appliedDiscountCodes");
-    if (storedCodes) {
-      setAppliedCodes(JSON.parse(storedCodes));
-    }
   }, [cartItems]);
+
+  useEffect(() => {
+    const storedCodes = localStorage.getItem("appliedDiscountCodes");
+    try {
+      const parsed = JSON.parse(storedCodes);
+      if (Array.isArray(parsed)) {
+        setAppliedCodes(parsed);
+      } else {
+        setAppliedCodes([]);
+      }
+    } catch (err) {
+      console.error("Error parsing appliedDiscountCodes", err);
+      setAppliedCodes([]);
+    }
+  }, []);
+  
+
 
   useEffect(() => {
     const fetchDiscountDetails = async () => {
@@ -74,23 +87,26 @@ const ShoppingCart = () => {
   
     try {
       const response = await axios.get(`http://localhost:5000/api/getDiscountsByName/${discountCode}`);
-      const discountData = response.data[0]; 
+      const discountData = response.data[0][0]; 
+
+      console.log(discountData);
   
-      if (!discountData || 
+      if (!discountData ||
           typeof discountData !== 'object' ||
-          !discountData.code || 
-          discountData.value === undefined ||
-          discountData.type === undefined) {
+          discountData.Name === null || 
+          discountData.value === null ||
+          discountData.type === null) {
         setError("Invalid discount code structure");
         return;
       }
   
-      if (appliedCodes.some(code => code.toLowerCase() === discountCode.toLowerCase())) {
+      if (appliedCodes.some(Name => Name.toLowerCase() === discountCode.toLowerCase())) {
         setError("Discount code already applied");
         return;
       }
   
-      const updatedCodes = [...appliedCodes, discountData.code]; 
+      const updatedCodes = [...appliedCodes, discountData.Name]; 
+      console.log("thisshit", updatedCodes);
       setAppliedCodes(updatedCodes);
       localStorage.setItem("appliedDiscountCodes", JSON.stringify(updatedCodes));
   
