@@ -4,8 +4,6 @@ import './landing-page.css';
 import NotificationBell from './NotificationBell';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faBars,
-  faExpand,
   faShoppingCart,
   faHome,
   faTag,
@@ -19,9 +17,6 @@ import {
 
 function Landing() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    JSON.parse(localStorage.getItem('sidebarCollapsed')) || false
-  );
   const [activeCategory, setActiveCategory] = useState('All Products');
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
   const [products, setProducts] = useState([]);
@@ -47,7 +42,6 @@ function Landing() {
   }, []);
 
   const getSortedProducts = () => {
-    //const productsToSort = [...products];
     const productsToSort = products.slice();
 
     let sortedProducts = [];
@@ -67,7 +61,6 @@ function Landing() {
       sortedProducts = sortedProducts.filter(product => product.Category_name === activeCategory);
     }
 
-    console.log(sortedProducts);
     return sortedProducts;
   };
 
@@ -80,11 +73,6 @@ function Landing() {
     sortProducts();
   }, [sortOption, products, activeCategory]);
 
-  useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
-  }, [sidebarCollapsed]);
-
-  const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   const handleCategoryClick = (category) => setActiveCategory(category);
   const handleMenuItemClick = (menuItem) => setActiveMenuItem(menuItem);
   const handleProductClick = (product) => {
@@ -132,9 +120,6 @@ function Landing() {
   return (
     <div className="landing-container">
       <div className="top-nav">
-        <button className="toggle-sidebar" onClick={toggleSidebar}>
-          <FontAwesomeIcon icon={sidebarCollapsed ? faExpand : faBars} />
-        </button>
         <div className="logo">
           <FontAwesomeIcon icon={faShoppingCart} />
           RetailPro
@@ -189,33 +174,8 @@ function Landing() {
       </div>
 
       <div className="main-area">
-        <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <ul className="sidebar-menu">
-            {[
-              { icon: faHome, label: 'Dashboard' },
-              { icon: faTag, label: 'Products' },
-              { icon: faShoppingCart, label: 'Shopping Cart' },
-              { icon: faUsers, label: 'Customers' },
-              { icon: faChartBar, label: 'Reports' },
-              { icon: faBoxes, label: 'Inventory' },
-              { icon: faPercent, label: 'Discounts' },
-              { icon: faCog, label: 'Settings' },
-              { icon: faQuestionCircle, label: 'Help' },
-            ].map((item) => (
-              <li
-                key={item.label}
-                className={`${activeMenuItem === item.label ? 'active' : ''}`}
-                onClick={() => handleMenuItemClick(item.label)}
-              >
-                <FontAwesomeIcon icon={item.icon} />
-                {!sidebarCollapsed && item.label}
-              </li>
-            ))}
-          </ul>
-        </aside>
-
         <div className="main-content-wrapper">
-          <main className={`main-content ${sidebarCollapsed ? 'full-width' : ''}`}>
+          <main className="main-content full-width">
             <div className="filter-options">
               <div className="filter-label">Sort by:</div>
               <select className="filter-select"
@@ -225,8 +185,6 @@ function Landing() {
                 <option value="default">Select</option>
                 <option value="lowToHigh">Price: Low to High</option>
                 <option value="highToLow">Price: High to Low</option>
-                {/*<option>Best Selling</option>
-                <option>Newest First</option>*/}
               </select>
               <div className="filter-label">In Stock:</div>
               <select className="filter-select">
@@ -252,7 +210,7 @@ function Landing() {
                     <div className="description">{product.description}</div>
                     <div className="product-inventory">In stock: {product.stock_quantity}</div>
                     {!user && (
-                      <div className='loging-promt'> <a href="/login">Log in to purchase</a> </div>
+                      <div className='login-prompt'><a href="/login">Log in to purchase</a></div>
                     )}
                   </div>
                 </div>

@@ -2,8 +2,8 @@ const mysql = require('mysql2');
 
 const db = mysql.createConnection({
   host: 'posuma.mysql.database.azure.com',
-  user: '',
-  password: '',
+  user: 'jason_pos',
+  password: 'jasonposteam11',
   database: 'pointofsale',
   ssl: { rejectUnauthorized: true },
   port: 3306,
