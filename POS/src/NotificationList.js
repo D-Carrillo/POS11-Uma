@@ -39,9 +39,6 @@ const NotificationList = ({ onClose }) => {
             <div className="notification-content">
               {notification.message}
             </div>
-            <div className="notification-time">
-              {new Date(notification.created_at).toLocaleString()}
-            </div>
           </li>
         ))}
       </ul>
