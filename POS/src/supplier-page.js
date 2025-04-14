@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import { href, Link } from 'react-router-dom';
 import DiscountModal from './discountModal';
 import axios from 'axios';
 import "./supplier-page.css";
@@ -318,14 +318,20 @@ const SupplierPage = () => {
           );
         }
       };
+
+    const handleLanding = () => {
+        window.location.href = '/';
+    }
     
 
     return (
         <div className="user-page">
             <div className='top-user-nav'>
                 <div className="logo">
+                    <button className = "logo-button" onclick={handleLanding}> 
                     <FontAwesomeIcon icon={faShoppingCart} />
                     RetailPro
+                    </button>
                 </div>
                 <div className="user-controls">
                     <div className="user-info">
@@ -757,6 +763,7 @@ const SupplierPage = () => {
             )}
 
             <button onClick={handleSignOut} className="signout-button">Sign Out</button>
+            <button onClick={handleLanding} className="signout-button">Homepage</button>
             <button onClick={handleDeleteAccount} className="signout-button">
                 Delete Acount
             </button>

@@ -7,10 +7,10 @@ const addDiscount = async (req, res) => {
         await db.promise().query(
             `Insert Into discount
             (Name, Discount_Value, Start_Date, End_Date, Item_ID, Discount_type, is_deleted)
-            values (?,?,?,?,?,?, ?)`, 
-            [name, Number(value), startDate, endDate, Number(itemId), Number(type), Number(is_deleted)]
+            values (?,?,?,?,?,?,?)`, 
+            [name, parseFloat(value), startDate, endDate, Number(itemId), Number(type), Number(is_deleted)]
         )
-        res.status(201).json({success: true});
+        res.status(201).json({success: true,});
     }catch (err) {
         res.status(500).json({error: 'Discount creation failed'});
     };

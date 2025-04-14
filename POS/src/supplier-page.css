@@ -176,6 +176,18 @@
     font-size: 0.85rem;
     line-height: 1.4;
   }
+
+  .logo-button {
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    background-color: #2962ff; 
+    border-color: #2962ff;
+    border: none;
+    color: white;
+  }
   
   
   @keyframes fadeIn {
