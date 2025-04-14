@@ -186,12 +186,12 @@ function Landing() {
                 <option value="lowToHigh">Price: Low to High</option>
                 <option value="highToLow">Price: High to Low</option>
               </select>
-              <div className="filter-label">In Stock:</div>
+              {/* <div className="filter-label">In Stock:</div>
               <select className="filter-select">
                 <option>All Items</option>
                 <option>In Stock Only</option>
                 <option>Out of Stock</option>
-              </select>
+              </select> */}
             </div>
             <div className="product-grid">
               {displayProducts.map((product) => (

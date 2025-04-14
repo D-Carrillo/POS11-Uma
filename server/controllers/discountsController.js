@@ -24,7 +24,7 @@ const getDiscount = async (req, res) => {
     try {
 
         const [discounts] = await db.promise().query(
-            `SELECT d.Name, d.Discount_Value as value, d.Start_Date, d.End_Date, d.Discount_type as type, Discount_ID as discount_id
+            `SELECT d.Name, d.Discount_Value as value, d.Start_Date, d.End_Date, d.Discount_type as type, Discount_ID as discount_id, d.Item_ID as item_id
             FROM item as i, discount as d 
             where i.supplier_ID = ? and i.item_id = d.item_id and d.is_deleted = 0
             order by d.End_date`, [supplierID]

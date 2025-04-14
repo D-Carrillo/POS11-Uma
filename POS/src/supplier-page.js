@@ -754,43 +754,45 @@ const SupplierPage = () => {
                                             </button>
                                             </td>
                                         </tr>
-
                                         
+    
+            
                                         {isExpanded && (
                                             <>
-                                            {discounts && discounts.length > 0 ? (
-                                                discounts.map(discount => (
-                                                <tr key={`${product.item_id}-${discount.discount_id}`} className='discount-row'>
-                                                    <td colSpan="3">
-                                                    <strong>{discount.Name}</strong>
-                                                    <span className='discount-details'>
-                                                        {discount.value}% | {new Date(discount.Start_Date).toLocaleDateString()} to {new Date(discount.End_Date).toLocaleDateString()}
-                                                    </span>
-                                                    </td>
-                                                    <td colSpan="3">
-                                                    <div className='discount-type'>
-                                                        {discount.type === 0 ? "Percentage" : "Fixed Amount"}
-                                                    </div>
-                                                    </td>
-                                                    <td colSpan="2" className='action-buttons'>
-                                                    <button 
-                                                        onClick={() => handleDeleteDiscount(discount.discount_id)}
-                                                        className='delete-discount-button'
-                                                    >
-                                                        Delete Discount
-                                                    </button>
-                                                    </td>
-                                                </tr>
-                                                ))
-                                            ) : (
+                                                {discounts && discounts.filter(discount => Number(discount.item_id) === Number(product.item_id)).length > 0 ? (
+                                                    discounts.filter(discount => Number(discount.item_id) === Number(product.item_id)).map(discount => (
+                                                        <tr key={`${product.item_id}-${discount.discount_id}`} className='discount-row'>
+                                                        <td colSpan="3">
+                                                            <strong>{discount.Name}</strong>
+                                                            <span className='discount-details'>
+                                                            {discount.value}% | {new Date(discount.Start_Date).toLocaleDateString()} to {new Date(discount.End_Date).toLocaleDateString()}
+                                                            </span>
+                                                        </td>
+                                                        <td colSpan="3">
+                                                            <div className='discount-type'>
+                                                            {discount.type === 0 ? "Percentage" : "Fixed Amount"}
+                                                            </div>
+                                                        </td>
+                                                        <td colSpan="2" className='action-buttons'>
+                                                            <button 
+                                                            onClick={() => handleDeleteDiscount(discount.discount_id)}
+                                                            className='delete-discount-button'
+                                                            >
+                                                            Delete Discount
+                                                            </button>
+                                                        </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
                                                 <tr className='discount-row'>
-                                                <td colSpan="8" className="no-discounts">
+                                                    <td colSpan="8" className="no-discounts">
                                                     No discounts available
-                                                </td>
+                                                    </td>
                                                 </tr>
-                                            )}
+                                                )}
                                             </>
-                                        )}
+                                            )}
+
                                         </React.Fragment>
                                     );
                                     })}
@@ -810,10 +812,8 @@ const SupplierPage = () => {
         <div className="user-page">
             <div className='top-user-nav'>
                 <div className="logo">
-                    <button className = "logo-button" onclick={handleLanding}> 
                     <FontAwesomeIcon icon={faShoppingCart} />
                     RetailPro
-                    </button>
                 </div>
                 <div className="user-controls">
                     <div className="user-info">
@@ -832,6 +832,7 @@ const SupplierPage = () => {
 
             <div className="footer-controls">
                 <button onClick={handleSignOut} className="signout-button">Sign Out</button>
+                <button onClick={handleLanding} className="signout-button">Home page</button>
                 <button onClick={handleDeleteAccount} className="signout-button">
                     Delete Account
                 </button>

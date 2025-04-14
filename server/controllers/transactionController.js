@@ -167,9 +167,31 @@ const returnItem = async (req, res) => {
   };
 }
 
+const getreturnItem = async (req, res) => {
+
+    try {
+      const[returnItems] = await db.promise().query(`
+       Select Transaction_ID, Item_ID from return_item` ,
+      );
+
+
+      res.json({
+        success: true,
+        return: returnItems
+      });
+    }catch (err){
+      res.status(500).json({
+        success: false, error: 'Return failed'
+      });
+  };
+}
+
+
+
 module.exports = {
     createTransaction,
     createTransactionItem,
     getUserTransactions,
-    returnItem
+    returnItem,
+    getreturnItem
 }
