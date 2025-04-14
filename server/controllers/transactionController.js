@@ -116,34 +116,68 @@ const returnItem = async (req, res) => {
     const refund_amount = item.Discounted_Price !== null 
       ? item.Discounted_Price * item.Quantity 
       : item.Subtotal;
-
   
-
     await db.promise().query(`
-      Insert Into return_item (Transaction_ID, Item_ID, return_reason, refund_amount, return_date)
-      values (?,?,?,?,CURDATE())`, [transaction_id, item_id, return_reason, refund_amount]
+      INSERT INTO return_item (Transaction_ID, Item_ID, return_reason, refund_amount, return_date)
+      VALUES (?, ?, ?, ?, CURDATE())`, 
+      [transaction_id, item_id, return_reason, refund_amount]
     );
     
-    await db.promise().query(`
-      Update transaction
-      Set Transaction_Status = 0
-      Where Transaction_ID = ?
-      `, [transaction_id]);
-
     res.json({
       success: true,
       refund_amount: Number(refund_amount).toFixed(2)
     });
-  }catch (err){
+  } catch (err) {
     res.status(500).json({
       success: false, error: 'Return failed'
     });
   };
 }
 
+const acceptReturn = async (req, res) => {
+  const { notification_id } = req.body;
+  
+  try {
+    await db.promise().query('CALL accept_return(?)', [notification_id]);
+    
+    res.json({
+      success: true,
+      message: 'Return accepted successfully'
+    });
+  } catch (err) {
+    console.error('Accept return error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to accept return'
+    });
+  }
+};
+
+const declineReturn = async (req, res) => {
+  const { notification_id } = req.body;
+  
+  try {
+    await db.promise().query('CALL decline_return(?)', [notification_id]);
+    
+    res.json({
+      success: true,
+      message: 'Return declined successfully'
+    });
+  } catch (err) {
+    console.error('Decline return error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to decline return'
+    });
+  }
+};
+
+
 module.exports = {
     createTransaction,
     createTransactionItem,
     getUserTransactions,
-    returnItem
+    returnItem,
+    acceptReturn,
+    declineReturn
 }

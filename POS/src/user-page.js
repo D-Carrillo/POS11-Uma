@@ -12,6 +12,7 @@ import {
 
 Chart.register(...registerables);
 
+
 const UserPage = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const [period, setPeriod] = useState('weekly');
@@ -109,6 +110,7 @@ const UserPage = () => {
             case 0: return 'Return in Process';
             case 1: return 'Completed';
             case 2: return 'Return Completed';
+            case 3: return 'Return Declined';
             default: return 'Unknown';
         }
     };
@@ -213,10 +215,13 @@ const UserPage = () => {
             );
             alert(`Return processed. Refund: $${response.data.refund_amount}`);
             fetchTransactions();
+            
         }catch (err) {
             alert('Return Failed. Please try again.');
         }
     };
+
+    
 
     const chartData = {
         labels: reportData.map(r => r.period), 
@@ -230,6 +235,8 @@ const UserPage = () => {
             }
         ]
     }
+
+    
 
     return (
         <div className="user-page">

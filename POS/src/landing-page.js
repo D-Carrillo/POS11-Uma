@@ -96,7 +96,7 @@ function Landing() {
 
   useEffect(() => {
     sortProducts();
-  }, [sortOption, products, activeCategory]);
+  }, [sortOption, products, activeCategory, sortProducts]);
 
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
@@ -198,7 +198,6 @@ function Landing() {
           </div>
         </div>
       </div>
-
       <div className="categories-bar">
         {['All Products', 'Electronics', 'Clothing', 'Home & Kitchen', 'Toys', 'Sporting Goods', 'Business & Industrial', 'Jewelry & Watches', 'Refurbished'].map((category) => (
           <div
