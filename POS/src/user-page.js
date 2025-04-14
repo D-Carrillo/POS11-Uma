@@ -258,7 +258,7 @@ const UserPage = () => {
             <div className='top-user-nav'>
                     <div className="logo">
                 <FontAwesomeIcon icon={faShoppingCart} />
-                RetailPro
+                CheckMate
                 </div>
                 <div className="user-controls">
                 {/* <Link to="/shopping-cart">

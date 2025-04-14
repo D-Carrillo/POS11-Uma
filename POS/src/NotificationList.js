@@ -26,7 +26,7 @@ const NotificationList = ({ onClose }) => {
 
   const handleAcceptReturn = async (notification_id) => {
     try {
-      await axios.post(`http://localhost:3000/api/returns/accept`, { notification_id });
+      await axios.post(`http://localhost:5000/api/returns/accept`, { notification_id });
       alert('Return accepted successfully!');
       fetchNotifications(); // Refresh notifications
     } catch (err) {
@@ -37,7 +37,7 @@ const NotificationList = ({ onClose }) => {
   
   const handleDeclineReturn = async (notification_id) => {
     try {
-      await axios.post(`http://localhost:3000/api/returns/decline`, { notification_id });
+      await axios.post(`http://localhost:5000/api/returns/decline`, { notification_id });
       alert('Return declined successfully!');
       fetchNotifications(); 
     } catch (err) {

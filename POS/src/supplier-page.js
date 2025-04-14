@@ -813,7 +813,7 @@ const SupplierPage = () => {
             <div className='top-user-nav'>
                 <div className="logo">
                     <FontAwesomeIcon icon={faShoppingCart} />
-                    RetailPro
+                    CheckMate
                 </div>
                 <div className="user-controls">
                     <div className="user-info">

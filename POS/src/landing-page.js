@@ -184,7 +184,7 @@ function Landing() {
       <div className="top-nav">
         <div className="logo">
           <FontAwesomeIcon icon={faShoppingCart} />
-          RetailPro
+          CheckMate
         </div>
         <div className="search-container">
           <div className="search-bar">
