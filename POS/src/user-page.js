@@ -23,9 +23,10 @@ const UserPage = () => {
     const [transactions, setTransactions] = useState(null);
     const [items, setItems] = useState([]);
     const [error, setError] = useState(null);
+    const [returnItems, setReturnItems] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [transactionItems, setTransactionItems] = useState([]);
-    const [transactionTab, setTransactionTab] = useState(false);
+    const [showTransactionHistory, setShowTransactionHistory] = useState(false);
     const [userData, setUserData] = useState({
         first_name: '',
         middle_Initial: '',
@@ -47,7 +48,7 @@ const UserPage = () => {
             fetchCustomerReports();
             fetchUserData();
             fetchTransactions();
-            console.log("thisthisthis",transactionItems);
+            fetchReturnsItems();
         }
     , [period, user?.id]);
 
@@ -182,6 +183,10 @@ const UserPage = () => {
 
     };
 
+    const handleLanding = () => {
+        window.location.href = '/';
+    }
+
     const handleDeleteAccount = async () => {
 
         if (!window.confirm(`Delete your ${user.type} account?`)) return;
@@ -227,20 +232,24 @@ const UserPage = () => {
         }
     };
 
-    
+    const fetchReturnsItems = async () => {
 
-    const chartData = {
-        labels: reportData.map(r => r.period), 
-        datasets: [
-            {
-                label: 'Total Spent ($)',
-                data: reportData.map(r => r.total_spent),
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }
-        ]
-    }
+        try {
+            const response = await axios.get(
+                'http://localhost:5000/api/getReturns', {
+                    headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
+                }
+            );
+            setReturnItems(response.data.return);
+        }catch (err) {
+            alert('Return Failed. Please try again.');
+        }
+    };
+
+    const toggleTransactionHistory = () => {
+        setShowTransactionHistory(prev => !prev);
+    };
+
 
     
 
@@ -249,7 +258,7 @@ const UserPage = () => {
             <div className='top-user-nav'>
                     <div className="logo">
                 <FontAwesomeIcon icon={faShoppingCart} />
-                RetailPro
+                CheckMate
                 </div>
                 <div className="user-controls">
                 {/* <Link to="/shopping-cart">
@@ -452,93 +461,116 @@ const UserPage = () => {
             <div className='report-section'>
                 <h2>Purchase History</h2>
 
-                <div className='transaction-history-section'>
-                    <h2>Transaction History</h2>
+                    <div className='transaction-history-section'>
+                        <button 
+                            onClick={toggleTransactionHistory}
+                            className='transaction-history-toggle'
+                        >
+                            {showTransactionHistory ? 'Hide' : 'Show'} Transaction History
+                        </button>
+                    
 
-                    <table className='transaction-table'>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Transaction ID</th>
-                                <th>Total Cost</th>
-                                <th>Status</th>
-                                <th>Items</th>
-                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {transactions === null ? (
-                                <tr>
-                                    <td colSpan="6" className="loading-message">Loading transactions...</td>
-                                </tr>
-                            ) : transactions.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className="no-transactions">No transactions found</td>
-                                </tr>
-                            ) : (
-                                transactions.map(transaction => (
-                                    <React.Fragment key={transaction.Transaction_ID}>
-                                        <tr className='main-transaction-row'>
-                                            <td>{new Date(transaction.sale_time).toLocaleDateString()}</td>
-                                            <td>{transaction.Transaction_ID}</td> 
-                                            <td>${transaction.Total_cost}</td>
-                                            <td>{getStatusText(transaction.Transaction_Status)}</td>
-                                            <td>
-                                                <button 
-                                                    onClick={() => toggleTransaction(transaction.Transaction_ID)}
-                                                    className='toggle-items-button'
-                                                >
-                                                    {expandedTransactions.includes(transaction.Transaction_ID) ? 'Hide Items' : 'Show Items'}
-                                                </button>
-                                            </td>
-                                            <td>{/* Transaction actions */}</td>
+                        {showTransactionHistory && (
+                            <table className='transaction-table'>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Transaction ID</th>
+                                        <th>Total Cost</th>
+                                        <th>Status</th>
+                                        <th>Items</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {transactions === null ? (
+                                        <tr>
+                                            <td colSpan="6" className="loading-message">Loading transactions...</td>
                                         </tr>
-
-                                        {expandedTransactions.includes(transaction.Transaction_ID) && 
-                                            getItemsForTransaction(transaction.Transaction_ID).map(item => (
-                                                <tr key={`${transaction.Transaction_ID}-${item.Item_ID}`} className='item-row'>
-                                                    <td colSpan="2">
-                                                        <strong>{item.item_name}</strong> 
-                                                        <div className='item-description'>{item.item_description}</div>
-                                                    </td>
+                                    ) : transactions.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="no-transactions">No transactions found</td>
+                                        </tr>
+                                    ) : (
+                                        transactions.map(transaction => (
+                                            <React.Fragment key={transaction.Transaction_ID}>
+                                                <tr className='main-transaction-row'>
+                                                    <td>{new Date(transaction.sale_time).toLocaleDateString()}</td>
+                                                    <td>{transaction.Transaction_ID}</td> 
+                                                    <td>${transaction.Total_cost}</td>
+                                                    <td>{getStatusText(transaction.Transaction_Status)}</td>
                                                     <td>
-                                                        {item.Quantity} × ${item.item_price}
-                                                    </td>
-                                                    <td>
-                                                        {item.Discount_ID !== null ? (
-                                                        <>
-                                                        <span className='original-price'>${item.Subtotal}</span>
-                                                        <span className='discounted-price'>${item.Discounted_Price}</span>
-                                                    </>) : (`$${item.Subtotal}`)}</td>
-                                                    <td>
-                                                        {transaction.Transaction_Status === 1 && (
-                                                            <button 
-                                                                className='return-button'
-                                                                onClick={ () => handleReturn(transaction.Transaction_ID, item.Item_ID)}
-                                                            >
-                                                                Request Return
-                                                            </button>
-                                                        )}
+                                                        <button 
+                                                            onClick={() => toggleTransaction(transaction.Transaction_ID)}
+                                                            className='toggle-items-button'
+                                                        >
+                                                            {expandedTransactions.includes(transaction.Transaction_ID) ? 'Hide Items' : 'Show Items'}
+                                                        </button>
                                                     </td>
                                                     <td></td>
                                                 </tr>
-                                            ))
-                                        }
-                                    </React.Fragment>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+
+                                                {console.log(returnItems)}
+                                                {expandedTransactions.includes(transaction.Transaction_ID) && 
+                                                    getItemsForTransaction(transaction.Transaction_ID).map(item => (
+                                                        <tr key={`${transaction.Transaction_ID}-${item.Item_ID}`} className='item-row'>
+                                                            <td colSpan="2">
+                                                                <strong>{item.item_name}</strong> 
+                                                                <div className='item-description'>{item.item_description}</div>
+                                                            </td>
+                                                            <td>
+                                                                {item.Quantity} × ${item.item_price}
+                                                            </td>
+                                                            <td>
+                                                                {item.Discount_ID !== null ? (
+                                                                    <>
+                                                                        <span className='original-price'>${item.Subtotal}</span>
+                                                                        <span className='discounted-price'>${item.Discounted_Price}</span>
+                                                                    </>
+                                                                ) : (`$${item.Subtotal}`)}
+                                                            </td>
+                                                            <td>
+                                                                {/* Check if the current item is in the returnItems list */}
+                                                                {returnItems.some(returnItem => 
+                                                                    returnItem.Transaction_ID === transaction.Transaction_ID && 
+                                                                    returnItem.Item_ID === item.Item_ID
+                                                                ) ? (
+                                                                    // If item has been returned, no return button
+                                                                    <span className="returned">Returned</span>
+                                                                ) : (
+                                                                    // If item hasn't been returned, show return button
+                                                                    <button 
+                                                                        className='return-button'
+                                                                        onClick={() => handleReturn(transaction.Transaction_ID, item.Item_ID)}
+                                                                    >
+                                                                        Request Return
+                                                                    </button>
+                                                                )}
+                                                            </td>
+                                                            <td></td>
+                                                        </tr>
+                                                    ))
+                                                }
+
+
+
+
+                                            </React.Fragment>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
 
             <ReportTabs user = {user}/>
 
             <button onClick = {handleSignOut} className='signout-button'>Sign Out</button>
+            <button onClick={handleLanding} className="signout-button">Home page</button>
             <button onClick={handleDeleteAccount} className="signout-button">
                 Delete Acount
             </button>
             
+        </div>
         </div>
     );
 };

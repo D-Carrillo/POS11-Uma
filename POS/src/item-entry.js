@@ -57,7 +57,7 @@ const ItemEntryForm = () => {
                             <input
                                 type="text"
                                 required
-                                maxLength={50}
+                                
                                 value={itemDescription}
                                 onChange={(e) => setItemDescription(e.target.value)}
                             />

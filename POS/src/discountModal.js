@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './discountModal.css';
 
 const DiscountModal = ({ isOpen, onClose, onSubmit, itemId}) => {
@@ -11,6 +11,14 @@ const DiscountModal = ({ isOpen, onClose, onSubmit, itemId}) => {
         itemId: itemId,
         is_deleted: '0'
     });
+
+    useEffect(() => {
+        setDiscountData(prev => ({
+          ...prev,
+          itemId: itemId
+        }));
+      }, [itemId]); 
+
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -94,13 +102,13 @@ const DiscountModal = ({ isOpen, onClose, onSubmit, itemId}) => {
                         />
                     </div>
 
-                    {itemId && (
+                    {discountData.itemId && (
                         <div className='form-group'>
                             <label>Item ID</label>
                             <input  
                                 className='model-input' 
                                 type="text"
-                                value={itemId}
+                                value={discountData.itemId}
                                 readOnly
                                 disabled
                             />

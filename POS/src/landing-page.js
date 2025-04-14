@@ -19,9 +19,6 @@ import {
 
 function Landing() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    JSON.parse(localStorage.getItem('sidebarCollapsed')) || false
-  );
   const [activeCategory, setActiveCategory] = useState('All Products');
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
   const [products, setProducts] = useState([]);
@@ -54,13 +51,13 @@ function Landing() {
       if (!response.ok) throw new Error('Failed to fetch search results');
       const data = await response.json();
   
-      // Filter search results by the active category
+
       const filteredResults = data.filter(product => 
         activeCategory === 'All Products' || product.Category_name === activeCategory
       );
   
-      setProducts(data); // Update the full product list
-      setDisplayProducts(filteredResults); // Update the displayed products
+      setProducts(data); 
+      setDisplayProducts(filteredResults); 
     } catch (err) {
       setError(err.message);
     } finally {
@@ -88,7 +85,6 @@ function Landing() {
 
 
   const getSortedProducts = useCallback(() => {
-    //const productsToSort = [...products];
     const productsToSort = products.slice();
 
     let sortedProducts = [];
@@ -121,11 +117,7 @@ function Landing() {
     sortProducts();
   }, [sortOption, products, activeCategory, sortProducts]);
 
-  useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
-  }, [sidebarCollapsed]);
 
-  const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   const handleCategoryClick = (category) => {
     setActiveCategory(category);
   
@@ -190,12 +182,9 @@ function Landing() {
   return (
     <div className="landing-container">
       <div className="top-nav">
-        <button className="toggle-sidebar" onClick={toggleSidebar}>
-          <FontAwesomeIcon icon={sidebarCollapsed ? faExpand : faBars} />
-        </button>
         <div className="logo">
           <FontAwesomeIcon icon={faShoppingCart} />
-          RetailPro
+          CheckMate
         </div>
         <div className="search-container">
           <div className="search-bar">
@@ -254,33 +243,10 @@ function Landing() {
       </div>
 
       <div className="main-area">
-        <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <ul className="sidebar-menu">
-            {[
-              { icon: faHome, label: 'Dashboard' },
-              { icon: faTag, label: 'Products' },
-              { icon: faShoppingCart, label: 'Shopping Cart' },
-              { icon: faUsers, label: 'Customers' },
-              { icon: faChartBar, label: 'Reports' },
-              { icon: faBoxes, label: 'Inventory' },
-              { icon: faPercent, label: 'Discounts' },
-              { icon: faCog, label: 'Settings' },
-              { icon: faQuestionCircle, label: 'Help' },
-            ].map((item) => (
-              <li
-                key={item.label}
-                className={`${activeMenuItem === item.label ? 'active' : ''}`}
-                onClick={() => handleMenuItemClick(item.label)}
-              >
-                <FontAwesomeIcon icon={item.icon} />
-                {!sidebarCollapsed && item.label}
-              </li>
-            ))}
-          </ul>
-        </aside>
+
 
         <div className="main-content-wrapper">
-          <main className={`main-content ${sidebarCollapsed ? 'full-width' : ''}`}>
+          <main className="main-content">
             <div className="filter-options">
               <div className="filter-label">Sort by:</div>
               <select className="filter-select"
@@ -293,12 +259,12 @@ function Landing() {
                 {/*<option>Best Selling</option>
                 <option>Newest First</option>*/}
               </select>
-              <div className="filter-label">In Stock:</div>
+              {/* <div className="filter-label">In Stock:</div>
               <select className="filter-select">
                 <option>All Items</option>
                 <option>In Stock Only</option>
                 <option>Out of Stock</option>
-              </select>
+              </select> */}
             </div>
             <div className="product-grid">
               {displayProducts.map((product) => (

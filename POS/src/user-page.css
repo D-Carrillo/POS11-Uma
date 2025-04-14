@@ -312,6 +312,16 @@
     cursor: pointer;
     transition: all 0.2s;
   }
+
+  .transaction-history-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
   
   .return-button:hover {
     background-color: #fee2e2;
