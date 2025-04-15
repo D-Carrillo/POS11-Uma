@@ -51,7 +51,7 @@ const CustomerEntryForm = () => {
             <div className="customerEntryForm">
                 <h1>Customer Sign Up</h1>
                 <form onSubmit={handleSubmit}>
-                    
+
                     {/* Personal Information Section */}
                     <div className="form-section">
                         <h2>Personal Information</h2>
@@ -115,7 +115,7 @@ const CustomerEntryForm = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="email">Enter your example.com email</label>
+                            <label htmlFor="email">Email</label>
                             <input
                                 type="email"
                                 id="email"

@@ -22,7 +22,7 @@ const SupplierForm = () => {
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedState, setSelectedState] = useState('');
     const [error, setError] = useState('');
-    
+
 
     const countries = Country.getAllCountries();
     const state = selectedCountry ? State.getStatesOfCountry(selectedCountry) : [];
@@ -114,7 +114,7 @@ const SupplierForm = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="email">Enter your example.com email</label>
+                            <label htmlFor="email">Email</label>
                             <input
                                 type="email"
                                 id="email"

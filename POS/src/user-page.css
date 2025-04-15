@@ -15,7 +15,6 @@
     padding-bottom: 10px;
 }
 
-
 .profile-info {
     display: flex;
     flex-direction: column;
@@ -98,7 +97,7 @@
     margin-top: 20px;
 }
 
-.cancel-button, 
+.cancel-button,
 .save-button,
 .edit-profile-button {
     padding: 10px 20px;
@@ -152,11 +151,11 @@
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .profile-info {
         flex-direction: column;
     }
-    
+
     .form-actions {
         justify-content: space-between;
     }
@@ -167,7 +166,7 @@
     color: #dc3545;
     font-size: 0.85rem;
     margin-top: 5px;
-} 
+}
 
 /* Transaction History Styles */
 .transaction-history-section {
@@ -253,38 +252,38 @@
 .item-row {
     background-color: #f8fafc;
     transition: all 0.2s ease;
-    border-left: 4px solid #2962ff; 
+    border-left: 4px solid #2962ff;
   }
-  
+
   .item-row:hover {
     background-color: #f1f5f9;
   }
-  
+
   .item-row td {
     padding: 10px 15px;
     vertical-align: top;
     border-bottom: 1px solid #e2e8f0;
   }
-  
+
   .item-row td:first-child {
     width: 40%;
   }
-  
+
   .item-row td:nth-child(3) {
     font-family: 'Courier New', monospace;
     color: #4b5563;
   }
-  
+
   .item-row td:nth-child(4) {
     font-weight: 600;
     color: #1e40af;
   }
-  
-  
+
+
   .item-row td:nth-child(5) {
     text-align: center;
   }
-  
+
 
   .item-row strong {
     display: block;
@@ -292,15 +291,15 @@
     font-size: 0.95rem;
     margin-bottom: 4px;
   }
-  
+
 
   .item-description {
     color: #64748b;
     font-size: 0.85rem;
     line-height: 1.4;
   }
-  
-  
+
+
 
   .return-button {
     background-color: #fef2f2;
@@ -322,17 +321,17 @@
     margin-bottom: 1rem;
 }
 
-  
+
   .return-button:hover {
     background-color: #fee2e2;
   }
-  
+
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  
+
   .item-row {
     animation: fadeIn 0.3s ease-out;
   }
