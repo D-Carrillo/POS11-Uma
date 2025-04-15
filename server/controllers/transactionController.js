@@ -183,7 +183,10 @@ const acceptReturn = async (req, res) => {
   const { notification_id } = req.body;
   
   try {
-    await db.promise().query('CALL accept_return(?)', [notification_id]);
+    await db.promise().query(`Update transaction set Transaction_status = 2 where Transaction_ID = (
+      Select Transaction_ID
+      from supplier_notification
+      where notification_id = ?) `, [notification_id]);
     
     res.json({
       success: true,
@@ -202,7 +205,25 @@ const declineReturn = async (req, res) => {
   const { notification_id } = req.body;
   
   try {
-    await db.promise().query('CALL decline_return(?)', [notification_id]);
+    await db.promise().query(`Update transaction set Transaction_status = 3 where Transaction_ID = (
+      Select Transaction_ID
+      from supplier_notification
+      where notification_id = ?) `, [notification_id]);
+
+      await db.promise().query(`
+        DELETE FROM return_item 
+        WHERE Item_ID = (
+          SELECT Item_ID 
+          FROM supplier_notification 
+          WHERE notification_id = ?
+        ) 
+        AND Transaction_ID = (
+          SELECT Transaction_ID 
+          FROM supplier_notification 
+          WHERE notification_id = ?
+        )
+      `, [notification_id, notification_id]);
+      
     
     res.json({
       success: true,
