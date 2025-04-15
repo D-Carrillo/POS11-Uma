@@ -1,4 +1,4 @@
-
+require('dotenv').congif();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -15,8 +15,13 @@ require('./config/db');
 const app = express();
 
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
+
+app.use(cors({
+  origin: proccess.env.CLIENT_ORIGIN || 'http://localhost:3000', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Routes
 app.use('/auth', authRoutes);
@@ -34,11 +39,6 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something broke!');
 });
 
-app.use(cors({
-  origin: 'http://localhost:3000', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
-const PORT = 5000;
+const PORT = proccess.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
