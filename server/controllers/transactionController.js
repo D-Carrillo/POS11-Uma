@@ -140,7 +140,7 @@ const returnItem = async (req, res) => {
     }
     
     const refund_amount = item.Discounted_Price !== null 
-      ? item.Discounted_Price * item.Quantity 
+      ? item.Discounted_Price 
       : item.Subtotal;
   
     await db.promise().query(`
