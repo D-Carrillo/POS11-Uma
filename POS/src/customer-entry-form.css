@@ -46,6 +46,7 @@
 .customerEntryForm input[type="tel"],
 .customerEntryForm input[type="date"],
 .customerEntryForm input[type="number"],
+.customerEntryForm input[type="password"],
 .customerEntryForm select,
 .customerEntryForm textarea {
   flex: 1;

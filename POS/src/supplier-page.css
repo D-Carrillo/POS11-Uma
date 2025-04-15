@@ -230,7 +230,7 @@ h1 {
   margin-top: 1rem;
 }
 
-.products-table th, 
+.products-table th,
 .products-table td {
   padding: 0.75rem;
   text-align: left;
@@ -250,7 +250,7 @@ h1 {
   gap: 8px;
 }
 
-.modify-button, 
+.modify-button,
 .discount-button {
   background-color: #007bff;
   color: white;
@@ -271,7 +271,7 @@ h1 {
   cursor: pointer;
 }
 
-.modify-button:hover, 
+.modify-button:hover,
 .discount-button:hover {
   background-color: #3a58b3;
 }
@@ -432,6 +432,9 @@ h1 {
   border-radius: 4px;
   margin: 20px 0;
 }
+.transaction-log-container {
+  padding-top: 40px;
+}
 .footer-controls {
   display: flex;
   margin-top: 40px;
@@ -477,21 +480,21 @@ h1 {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .form-group {
     min-width: 100%;
   }
-  
+
   .profile-info {
     flex-direction: column;
   }
-  
+
   .supplier-tabs {
     overflow-x: auto;
     white-space: nowrap;
     padding-bottom: 5px;
   }
-  
+
   .tab-button {
     padding: 10px 15px;
     font-size: 14px;
@@ -502,7 +505,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   margin: 30px 0;
-  gap: 30px; 
+  gap: 30px;
 }
 
 .metric-card {
@@ -555,7 +558,7 @@ h1 {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .metric-card {
     width: 100%;
   }

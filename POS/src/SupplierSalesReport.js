@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './supplier-page.css'; 
+import './supplier-page.css';
 
 const SupplierSalesReport = ({ supplierId }) => {
   const [reportData, setReportData] = useState([]);
   const [period, setPeriod] = useState('Weekly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [logOutput, setLogOutput] = useState([]);
   const [summary, setSummary] = useState({
     totalItems: 0,
     totalUnitsSold: 0,
@@ -20,8 +21,8 @@ const SupplierSalesReport = ({ supplierId }) => {
   const getDateRange = (periodType) => {
     const endDate = new Date();
     let startDate = new Date();
-    
-    switch(periodType) {
+
+    switch (periodType) {
       case 'Weekly':
         startDate.setDate(endDate.getDate() - 7);
         break;
@@ -34,7 +35,7 @@ const SupplierSalesReport = ({ supplierId }) => {
       default:
         startDate.setDate(endDate.getDate() - 7);
     }
-    
+
     return {
       startDate: startDate.toISOString().split('T')[0],
       endDate: endDate.toISOString().split('T')[0]
@@ -52,15 +53,16 @@ const SupplierSalesReport = ({ supplierId }) => {
 
     try {
       const { startDate, endDate } = getDateRange(period);
-      
-      
+
+
       const response = await axios.get(`http://localhost:5000/api/supplier-sales/${supplierId}`, {
         params: { startDate, endDate }
       });
-      
+
       if (response.data.success) {
         setReportData(response.data.data.salesSummary);
         setSummary(response.data.data.summary);
+        setLogOutput(response.data.data.logOutput);
       } else {
         throw new Error(response.data.error || 'Failed to fetch report');
       }
@@ -79,12 +81,12 @@ const SupplierSalesReport = ({ supplierId }) => {
   return (
     <div className="sales-report-container">
       <h2>Sales Summary Report</h2>
-      
+
       <div className="period-selector">
         <label htmlFor="periodSelect">Select Period:</label>
-        <select 
-          id="periodSelect" 
-          value={period} 
+        <select
+          id="periodSelect"
+          value={period}
           onChange={handlePeriodChange}
           className="period-select"
         >
@@ -142,6 +144,36 @@ const SupplierSalesReport = ({ supplierId }) => {
             </div>
           )}
         </>
+      )}
+
+      {logOutput && logOutput.length > 0 && (
+        <div className="transaction-log-container">
+          <h3>Transaction Sale Log</h3>
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>User Email</th>
+                <th>Date</th>
+                <th>Item Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logOutput.map((log, index) => (
+                <tr key={index}>
+                  <td>{log.Transaction_ID}</td>
+                  <td>{log.Email}</td>
+                  <td>{new Date(log.transaction_date).toLocaleString()}</td>
+                  <td>{log.item_name}</td>
+                  <td>${parseFloat(log.Price).toFixed(2)}</td>
+                  <td>{log.Quantity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -50,14 +50,14 @@ function Landing() {
       const response = await fetch(`http://localhost:5000/api/items/search?query=${encodeURIComponent(searchQuery)}`);
       if (!response.ok) throw new Error('Failed to fetch search results');
       const data = await response.json();
-  
 
-      const filteredResults = data.filter(product => 
+
+      const filteredResults = data.filter(product =>
         activeCategory === 'All Products' || product.Category_name === activeCategory
       );
-  
-      setProducts(data); 
-      setDisplayProducts(filteredResults); 
+
+      setProducts(data);
+      setDisplayProducts(filteredResults);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,11 +72,11 @@ function Landing() {
       if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
       setProducts(data);
-      
-      // Filter by active category
-      const filteredResults = data.filter(product => 
-        activeCategory === 'All Products' || product.Category_name === activeCategory
-      );
+
+      const filteredResults = activeCategory === 'All Products'
+        ? data
+        : data.filter(product => product.Category_name === activeCategory);
+
       setDisplayProducts(filteredResults);
     } catch (err) {
       setError(err.message);
@@ -120,14 +120,14 @@ function Landing() {
 
   const handleCategoryClick = (category) => {
     setActiveCategory(category);
-  
+
     // Filter products based on the selected category and search query
     const filteredProducts = products.filter(product => {
       const matchesCategory = category === 'All Products' || product.Category_name === category;
       const matchesSearch = product.Name.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  
+
     setDisplayProducts(filteredProducts);
   };
 
@@ -138,21 +138,21 @@ function Landing() {
       window.location.href = '/login';
       return;
     }
-    
+
     if (user.type !== "customer") {
       alert('Need to be a customer for Checkout!');
       return;
     }
-  
+
     const shouldAdd = window.confirm(`Add "${product.Name}" to your cart?`);
-  
+
     if (shouldAdd) {
       const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
-      
-      const existingProductIndex = existingCart.findIndex(item => 
+
+      const existingProductIndex = existingCart.findIndex(item =>
         item.Item_ID === product.Item_ID && item.Name === product.Name
       );
-  
+
       if (existingProductIndex >= 0) {
         if (existingCart[existingProductIndex].quantity < (product.maxQuantity || 99)) {
           existingCart[existingProductIndex].quantity += 1;
@@ -161,7 +161,7 @@ function Landing() {
           return;
         }
       } else {
-        existingCart.push({ 
+        existingCart.push({
           Item_ID: product.Item_ID,
           Name: product.Name,
           price: product.price || product.Price,
@@ -170,7 +170,7 @@ function Landing() {
           stock_quantity: product.stock_quantity || 99,
         });
       }
-  
+
       localStorage.setItem('cart', JSON.stringify(existingCart));
       alert(`"${product.Name}" was added to your cart!`);
     }
@@ -231,7 +231,7 @@ function Landing() {
         </div>
       </div>
       <div className="categories-bar">
-        {['All Products', 'Electronics', 'Clothing', 'Home & Kitchen', 'Toys', 'Sporting Goods', 'Business & Industrial', 'Jewelry & Watches', 'Refurbished'].map((category) => (
+        {['All Products', 'Electronics', 'Clothing', 'Home & Kitchen', 'Sporting Goods', 'Business & Industrial', 'Jewelry & Watches', 'Refurbished'].map((category) => (
           <div
             key={category}
             className={`category-tab ${activeCategory === category ? 'active' : ''}`}

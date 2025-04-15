@@ -9,43 +9,43 @@ exports.getCustomerReports = async (req, res) => {
     }
 
     let dateFormat, dateCondition;
-    const now = new Date(); 
-    
+    const now = new Date();
+
     switch (period) {
         case 'Weekly':
-            dateFormat = '%Y-%u'; 
-            const oneWeekAgo = new Date(now); 
+            dateFormat = '%Y-%u';
+            const oneWeekAgo = new Date(now);
             oneWeekAgo.setDate(now.getDate() - 7);
             dateCondition = `t.sale_time >= '${oneWeekAgo.toISOString().slice(0, 19).replace('T', ' ')}'`;
             break;
-            
+
         case 'Monthly':
             dateFormat = '%Y-%m';
-            const oneMonthAgo = new Date(now); 
+            const oneMonthAgo = new Date(now);
             oneMonthAgo.setMonth(now.getMonth() - 1);
             dateCondition = `t.sale_time >= '${oneMonthAgo.toISOString().slice(0, 19).replace('T', ' ')}'`;
             break;
-            
+
         case 'Yearly':
             dateFormat = '%Y';
-            const oneYearAgo = new Date(now); 
+            const oneYearAgo = new Date(now);
             oneYearAgo.setFullYear(now.getFullYear() - 1);
             dateCondition = `t.sale_time >= '${oneYearAgo.toISOString().slice(0, 19).replace('T', ' ')}'`;
             break;
-            
+
         default:
             return res.status(400).json({ error: 'Invalid period' });
     }
 
     const query = `
-        SELECT 
-            DATE_FORMAT(t.sale_time, ?) AS period, 
+        SELECT
+            DATE_FORMAT(t.sale_time, ?) AS period,
             SUM(t.Total_cost) AS total_spent,
-            COUNT(t.Transaction_ID) AS transaction_count, 
-            SUM(t.Total_items) AS total_items_purchased, 
-            AVG(t.Total_cost) AS average_order_value 
+            COUNT(t.Transaction_ID) AS transaction_count,
+            SUM(t.Total_items) AS total_items_purchased,
+            AVG(t.Total_cost) AS average_order_value
         FROM transaction AS t
-        WHERE t.Customer_ID = ? 
+        WHERE t.Customer_ID = ?
         AND ${dateCondition}
         AND t.Transaction_Status = 1
         GROUP BY period
@@ -99,7 +99,7 @@ exports.getSupplierReport = async (req, res) => {
     if (itemId) queryParams.push(itemId);
 
     const query = `
-        SELECT 
+        SELECT
             i.Item_ID,
             i.Name AS item_name,
             COUNT(t.Transaction_ID) AS times_sold,
@@ -185,8 +185,8 @@ exports.getSpendingReport = async (req, res) => {
 
     try {
         const [trend] = await db.promise().query(
-            `SELECT 
-                ANY_VALUE(CASE 
+            `SELECT
+                ANY_VALUE(CASE
                     WHEN ? = 'day' THEN DATE_FORMAT(t.sale_time, '%H:00')
                     WHEN ? = 'week' THEN DATE_FORMAT(t.sale_time, '%Y-%m-%d')
                     WHEN ? = 'month' THEN DATE_FORMAT(t.sale_time, '%Y-%m-%d')
@@ -201,8 +201,8 @@ exports.getSpendingReport = async (req, res) => {
             WHERE t.Customer_ID = ?
             AND t.sale_time BETWEEN ? AND ?
             AND t.Transaction_Status = 1
-            GROUP BY 
-                CASE 
+            GROUP BY
+                CASE
                     WHEN ? = 'day' THEN DATE_FORMAT(t.sale_time, '%H')
                     WHEN ? = 'week' THEN DATE_FORMAT(t.sale_time, '%Y-%m-%d')
                     WHEN ? = 'month' THEN DATE_FORMAT(t.sale_time, '%Y-%m-%d')
@@ -213,7 +213,7 @@ exports.getSpendingReport = async (req, res) => {
             [ period, period, period, period, userID, dateFilter.gte, dateFilter.lte, period, period, period, period ] );
 
         const [categories] = await db.promise().query(`
-            SELECT 
+            SELECT
                 c.Category_Name AS category_name,
                 SUM(COALESCE(ti.Subtotal, 0)) AS total_spent
             FROM transaction t
@@ -228,7 +228,7 @@ exports.getSpendingReport = async (req, res) => {
 
         console.log("Found spending trend records:", trend.length);
         console.log("Found category records:", categories.length);
-        
+
         const total_spent = trend.reduce((sum, row) => sum + parseFloat(row.total_spent || 0), 0);
         const total_items = trend.reduce((sum, row) => sum + parseInt(row.total_items_sold || 0), 0);
         const transaction_count = trend.reduce((sum, row) => sum + parseInt(row.transaction_count || 0), 0);
@@ -259,58 +259,88 @@ exports.getSupplierSalesSummary = async (req, res) => {
     try {
         const supplierId = req.params.supplierId;
         const { startDate, endDate } = req.query;
-        
+
         console.log("Generating supplier sales summary:", { supplierId, startDate, endDate });
-        
+
         if (!supplierId) {
             return res.status(400).json({ error: 'Supplier ID is required' });
         }
-        
+
         if (!startDate || !endDate) {
             return res.status(400).json({ error: 'Start date and end date are required' });
         }
-        
+
         const query = `
-            SELECT 
+            SELECT
                 i.Item_ID,
                 i.Name,
                 SUM(ti.Quantity) AS total_units_sold,
                 SUM(ti.Subtotal) AS total_revenue
-            FROM 
+            FROM
                 item i
-            JOIN 
+            JOIN
                 transaction_item ti ON i.Item_ID = ti.Item_ID
-            JOIN 
+            JOIN
                 transaction t ON ti.Transaction_ID = t.Transaction_ID
-            WHERE 
-                i.supplier_ID = ? 
+            WHERE
+                i.supplier_ID = ?
                 AND t.sale_time BETWEEN ? AND ?
                 AND t.Transaction_Status = 1
-            GROUP BY 
+            GROUP BY
                 i.Item_ID, i.Name
-            ORDER BY 
+            ORDER BY
                 total_units_sold DESC`;
-        
+
         const startDateObj = new Date(startDate);
         const endDateObj = new Date(endDate);
-        endDateObj.setHours(23, 59, 59, 999); 
+        endDateObj.setHours(23, 59, 59, 999);
 
         console.log("Query date range:", {
             start: startDateObj.toISOString(),
             end: endDateObj.toISOString()
         });
-        
+
         const [results] = await db.promise().query(query, [
             supplierId,
             startDateObj,
             endDateObj
         ]);
-        
+
         console.log("Found sales summary records:", results.length);
-        
+
+        const logQuery = `
+        SELECT
+            t.Transaction_ID,
+            t.sale_time AS transaction_date,
+            i.Name AS item_name,
+            i.Price AS Price,
+            c.Email AS Email,
+            ti.Quantity
+        FROM
+            transaction t
+        JOIN
+            transaction_item ti ON t.Transaction_ID = ti.Transaction_ID
+        JOIN
+            item i ON ti.Item_ID = i.Item_ID
+        JOIN
+            customer c ON c.Customer_ID = t.Customer_ID
+        WHERE
+            i.supplier_ID = ?
+            AND t.sale_time BETWEEN ? AND ?
+            AND t.Transaction_Status = 1
+        ORDER BY
+            t.Transaction_ID, t.sale_time
+        `;
+
+        const [logResults] = await db.promise().query(logQuery, [
+            supplierId,
+            startDateObj,
+            endDateObj
+        ]);
+
         const totalUnitsSold = results.reduce((sum, item) => sum + Number(item.total_units_sold), 0);
         const totalRevenue = results.reduce((sum, item) => sum + parseFloat(item.total_revenue), 0);
-        
+
         res.status(200).json({
             success: true,
             data: {
@@ -323,7 +353,8 @@ exports.getSupplierSalesSummary = async (req, res) => {
                 period: {
                     startDate,
                     endDate
-                }
+                },
+                logOutput: logResults
             }
         });
     } catch (error) {
@@ -332,69 +363,71 @@ exports.getSupplierSalesSummary = async (req, res) => {
     }
 };
 
+
+
 exports.getTopSellingItems = async (req, res) => {
     try {
         const { limit = 10, supplierId, startDate, endDate } = req.query;
-        
+
         console.log("Generating top selling items report:", { limit, supplierId, startDate, endDate });
-        
+
         const numLimit = parseInt(limit);
         if (isNaN(numLimit) || numLimit <= 0) {
             return res.status(400).json({ error: 'Limit must be a positive number' });
         }
-        
+
         let query = `
-            SELECT 
+            SELECT
                 i.Item_ID,
                 i.Name,
                 i.supplier_ID,
                 s.Company_Name as Supplier_Name,
                 SUM(ti.Quantity) AS total_units_sold,
                 SUM(ti.Subtotal) AS total_revenue
-            FROM 
+            FROM
                 item i
-            JOIN 
+            JOIN
                 transaction_item ti ON i.Item_ID = ti.Item_ID
-            JOIN 
+            JOIN
                 transaction t ON ti.Transaction_ID = t.Transaction_ID
             JOIN
                 supplier s ON i.supplier_ID = s.Supplier_ID
-            WHERE 
+            WHERE
                 t.Transaction_Status = 1 `;
-        
+
         const params = [];
-        
+
         if (supplierId) {
             query += ` AND i.supplier_ID = ? `;
             params.push(supplierId);
         }
-        
+
         if (startDate && endDate) {
             query += ` AND t.sale_time BETWEEN ? AND ? `;
             const startDateObj = new Date(startDate);
             const endDateObj = new Date(endDate);
-            endDateObj.setHours(23, 59, 59, 999); 
+            endDateObj.setHours(23, 59, 59, 999);
             params.push(startDateObj, endDateObj);
-            
+
             console.log("Query date range:", {
                 start: startDateObj.toISOString(),
                 end: endDateObj.toISOString()
             });
         }
-        
+
         query += `
-            GROUP BY 
+            GROUP BY
                 i.Item_ID, i.Name, i.supplier_ID, s.Company_Name
-            ORDER BY 
+            ORDER BY
                 total_units_sold DESC
             LIMIT ?`;
-        
+
         params.push(numLimit);
-        
+
         const [results] = await db.promise().query(query, params);
-        
+
         console.log("Found top selling items:", results.length);
-        
+
         const responseData = {
             success: true,
             data: {
@@ -402,18 +435,18 @@ exports.getTopSellingItems = async (req, res) => {
                 count: results.length
             }
         };
-        
+
         if (supplierId) {
             responseData.data.filteredBySupplier = true;
         }
-        
+
         if (startDate && endDate) {
             responseData.data.period = {
                 startDate,
                 endDate
             };
         }
-        
+
         res.status(200).json(responseData);
     } catch (error) {
         console.error('Error generating top selling items report:', error);
