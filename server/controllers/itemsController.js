@@ -129,7 +129,7 @@ const searchItems = async (req, res) => {
 
     try {
         const [results] = await db.promise().query(
-            `SELECT Name, Price, description, stock_quantity, image_url FROM item WHERE Name LIKE ?`,
+            `SELECT Name, Price, description, stock_quantity, image_url FROM item WHERE Name LIKE ? AND is_deleted = 0`,
             [`%${query}%`]
         );
         res.status(200).json(results);

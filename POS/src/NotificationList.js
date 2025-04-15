@@ -5,6 +5,7 @@ import './Notifications.css';
 
 const NotificationList = ({ onClose }) => {
   const { notifications, loading, error, markAsRead, fetchNotifications } = useNotifications();
+  const [actedNotifications, setActedNotifications] = React.useState({});
 
   if (loading) {
     return <div className="notification-list-container">Loading notifications...</div>;
@@ -28,6 +29,7 @@ const NotificationList = ({ onClose }) => {
     try {
       await axios.post(`http://localhost:5000/api/returns/accept`, { notification_id });
       alert('Return accepted successfully!');
+      setActedNotifications(prev => ({...prev, [notification_id]: 'accepted'}));
       fetchNotifications(); // Refresh notifications
     } catch (err) {
       console.error('Failed to accept return:', err);
@@ -39,6 +41,7 @@ const NotificationList = ({ onClose }) => {
     try {
       await axios.post(`http://localhost:5000/api/returns/decline`, { notification_id });
       alert('Return declined successfully!');
+      setActedNotifications(prev => ({...prev, [notification_id]: 'declined'}));
       fetchNotifications(); 
     } catch (err) {
       console.error('Failed to decline return:', err);
@@ -63,13 +66,23 @@ const NotificationList = ({ onClose }) => {
               {notification.message}
             </div>
             {notification.message.includes('Return request') && (
-            <div className="notification-actions">
-              <button onClick={() => handleAcceptReturn(notification.notification_id)}>
-                Accept Return
-              </button>
-              <button onClick={() => handleDeclineReturn(notification.notification_id)}>
-                Decline Return
-              </button>
+              <div className="notification-actions">
+              {notification.status === 'accepted' && (
+                <div className="action-taken accepted">You accepted the return</div>
+              )}
+              {notification.status === 'declined' && (
+                <div className="action-taken declined">You declined the return</div>
+              )}
+              {!notification.status && (
+                <>
+                  <button onClick={() => handleAcceptReturn(notification.notification_id)}>
+                    Accept Return
+                  </button>
+                  <button onClick={() => handleDeclineReturn(notification.notification_id)}>
+                    Decline Return
+                  </button>
+                </>
+              )}
             </div>
           )}
           </li>

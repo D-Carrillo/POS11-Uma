@@ -184,6 +184,10 @@ const acceptReturn = async (req, res) => {
   
   try {
     await db.promise().query('CALL accept_return(?)', [notification_id]);
+    await db.promise().query(
+      'UPDATE supplier_notification SET status = "accepted" WHERE notification_id = ?',
+      [notification_id]
+    );
     
     res.json({
       success: true,
@@ -203,6 +207,10 @@ const declineReturn = async (req, res) => {
   
   try {
     await db.promise().query('CALL decline_return(?)', [notification_id]);
+    await db.promise().query(
+      'UPDATE supplier_notification SET status = "declined" WHERE notification_id = ?',
+      [notification_id]
+    );
     
     res.json({
       success: true,
