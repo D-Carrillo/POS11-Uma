@@ -10,17 +10,16 @@ const itemsRoutes = require('./routes/itemsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const discountRoutes = require('./routes/discountRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');// changed
 require('./config/db');
 
 const app = express();
 
-// Middleware
+
 app.use(cors());
 app.use(bodyParser.json());
 
-// Routes
+
 app.use('/auth', authRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', supplierRoutes);
@@ -29,7 +28,6 @@ app.use('/api/items', itemsRoutes);
 app.use('/api/', transactionRoutes);
 app.use('/api', discountRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/dashboard', dashboardRoutes); // changed
 app.use('/api/admin', adminRoutes);
 
 

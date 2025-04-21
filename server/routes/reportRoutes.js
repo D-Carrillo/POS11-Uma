@@ -14,6 +14,9 @@ router.get('/discount/:supplierId', reportController.getDiscountReport);
 
 router.get('/supplier-list', reportController.getSuppliers);
 
+router.put('/admin/suppliers/:id/delete', reportController.deleteSupplier);
+router.put('/admin/suppliers/:id/restore', reportController.restoreSupplier);
+
 
 router.get('/supplier/:supplierId/top-selling-items', (req, res, next) => {
     req.query.supplierId = req.params.supplierId;

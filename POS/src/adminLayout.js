@@ -24,11 +24,6 @@ const AdminLayout = () => {
         <nav className="admin-nav">
           <ul>
             <li>
-              <Link to="/dashboard">
-                <i className="fas fa-tachometer-alt"></i> Dashboard
-              </Link>
-            </li>
-            <li>
               <Link to="/users">
                 <i className="fas fa-users"></i> Users
               </Link>
@@ -41,11 +36,6 @@ const AdminLayout = () => {
             <li>
               <Link to="/suppliers">
                 <i className="fas fa-truck"></i> Suppliers
-              </Link>
-            </li>
-            <li>
-              <Link to="/settings">
-                <i className="fas fa-cog"></i> Settings
               </Link>
             </li>
           </ul>

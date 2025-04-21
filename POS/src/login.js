@@ -22,12 +22,12 @@ const Login = () => {
             });
             
             if (response.data?.user) {
-                // Save user data to localStorage
+                
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 
-                // Redirect based on user type
+                
                 if (response.data.user.is_admin) {
-                    window.location.href = '/dashboard'; 
+                    window.location.href = '/users'; 
                 } else {
                     window.location.href = '/'; 
                 }

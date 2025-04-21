@@ -11,11 +11,9 @@ import SupplierForm from './SupplierForm';
 import SupplierPage from './supplier-page';
 import ItemEntryForm from './item-entry';
 import { NotificationProvider } from './NotificationContext';
-import AdminDashboard from './adminDashboard';
 import AdminUsers from './adminUsers';
 import AdminProducts from './adminProducts';
 import AdminSuppliers from './adminSuppliers';
-import AdminSettings from './adminSettings';
 import AdminLayout from './adminLayout';
 
 function App() {
@@ -48,11 +46,9 @@ function App() {
           
           {/* Admin Routes */}
           <Route element={<AdminLayout />}>
-            <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/users" element={<AdminUsers />} />
             <Route path="/products" element={<AdminProducts />} />
             <Route path="/suppliers" element={<AdminSuppliers />} />
-            <Route path="/settings" element={<AdminSettings />} />
           </Route>
         </Routes>
       </Router>
