@@ -43,10 +43,10 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/supplier-entry-form" element={!user ? <SupplierForm /> : <Navigate to="/" />} />
           <Route path="/item-entry" element={<ItemEntryForm />} />
-          
+
           {/* Admin Routes */}
           <Route element={<AdminLayout />}>
-            <Route path="/users" element={<AdminUsers />} />
+            <Route path="/customers" element={<AdminUsers />} />
             <Route path="/products" element={<AdminProducts />} />
             <Route path="/suppliers" element={<AdminSuppliers />} />
           </Route>

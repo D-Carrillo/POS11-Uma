@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useNavigate, Navigate } from 'react-router-dom';
-import './adminLayout.css'; 
+import './adminLayout.css';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ const AdminLayout = () => {
         <nav className="admin-nav">
           <ul>
             <li>
-              <Link to="/users">
-                <i className="fas fa-users"></i> Users
+              <Link to="/customers">
+                <i className="fas fa-users"></i> Customers
               </Link>
             </li>
             <li>
@@ -49,7 +49,7 @@ const AdminLayout = () => {
             <button onClick={handleLogout}>Logout</button>
           </div>
         </header>
-        
+
         <div className="admin-content">
           <Outlet />
         </div>

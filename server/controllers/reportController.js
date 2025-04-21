@@ -579,31 +579,36 @@ exports.getSuppliers = async (req, res) => {
 exports.deleteSupplier = async (req, res) => {
     try {
         const supplierId = req.params.id;
-        
-        const query = `
-            UPDATE supplier
-            SET is_deleted = 1
-            WHERE supplier_id = ?`;
-        
-        const [result] = await db.promise().query(query, [supplierId]);
-        
+
+        // Delete items first
+        await db.promise().query(
+            `UPDATE item SET is_deleted = TRUE WHERE supplier_id = ?`,
+            [supplierId]
+        );
+
+        // Then delete the supplier
+        const [result] = await db.promise().query(
+            `UPDATE supplier SET is_deleted = TRUE WHERE supplier_id = ?`,
+            [supplierId]
+        );
+
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Supplier not found'
             });
         }
-        
+
         res.status(200).json({
             success: true,
             message: 'Supplier deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting supplier:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            error: 'Failed to delete supplier', 
-            details: error.message 
+            error: 'Failed to delete supplier',
+            details: error.message
         });
     }
 };
@@ -611,31 +616,31 @@ exports.deleteSupplier = async (req, res) => {
 exports.restoreSupplier = async (req, res) => {
     try {
         const supplierId = req.params.id;
-        
+
         const query = `
             UPDATE supplier
             SET is_deleted = 0
             WHERE supplier_id = ?`;
-        
+
         const [result] = await db.promise().query(query, [supplierId]);
-        
+
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Supplier not found'
             });
         }
-        
+
         res.status(200).json({
             success: true,
             message: 'Supplier restored successfully'
         });
     } catch (error) {
         console.error('Error restoring supplier:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            error: 'Failed to restore supplier', 
-            details: error.message 
+            error: 'Failed to restore supplier',
+            details: error.message
         });
     }
 };
