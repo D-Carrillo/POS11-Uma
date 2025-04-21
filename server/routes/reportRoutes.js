@@ -12,6 +12,8 @@ router.get('/top-selling-items', reportController.getTopSellingItems);
 
 router.get('/discount/:supplierId', reportController.getDiscountReport);
 
+router.get('/supplier-list', reportController.getSuppliers);
+
 
 router.get('/supplier/:supplierId/top-selling-items', (req, res, next) => {
     req.query.supplierId = req.params.supplierId;

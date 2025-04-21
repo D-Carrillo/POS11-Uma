@@ -10,8 +10,9 @@ const itemsRoutes = require('./routes/itemsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const discountRoutes = require('./routes/discountRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes'); // changed
-require('./config/db'); 
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const adminRoutes = require('./routes/adminRoutes');// changed
+require('./config/db');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/', transactionRoutes);
 app.use('/api', discountRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes); // changed
+app.use('/api/admin', adminRoutes);
 
 
 app.use((err, req, res, next) => {
@@ -37,7 +39,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use(cors({
-  origin: 'http://localhost:3000', 
+  origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

@@ -545,3 +545,33 @@ exports.getDiscountReport = async (req, res) => {
         res.status(500).json({ error: 'Failed to generate sales summary report', details: error.message });
     }
 };
+
+exports.getSuppliers = async (req, res) => {
+    try {
+        console.log("Getting Suppliers:");
+
+        const query = `
+            SELECT
+                supplier_id,
+                company_name,
+                email,
+                phone_number,
+                is_deleted
+            FROM
+                supplier`;
+
+
+        const [results] = await db.promise().query(query);
+
+
+        res.status(200).json({
+            success: true,
+            data: {
+                supplierData: results,
+            }
+        });
+    } catch (error) {
+        console.error('Error generating suppliers:', error);
+        res.status(500).json({ error: 'Failed to generate suppliers', details: error.message });
+    }
+};
